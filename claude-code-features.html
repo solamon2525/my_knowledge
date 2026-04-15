@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 ฟีเจอร์ซ่อนเร้นของ Claude Code — My Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #E8541A;
+    --orange-light: #FF7A45;
+    --dark: #1A1A2E;
+    --accent2: #FFE66D;
+    --text: #2C2C3E;
+    --text-light: #5A5A72;
+    --bg: #F4F2EE;
+    --card-bg: #FFFFFF;
+    --border: #E5E0D8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); }
+
+  /* Back button */
+  .back-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(26,26,46,0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0.6rem 1.4rem;
+    border-bottom: 1px solid rgba(255,230,109,0.15);
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem;
+    color: var(--accent2); text-decoration: none;
+    border: 1px solid rgba(255,230,109,0.25);
+    padding: 0.4rem 1rem; border-radius: 4px; transition: all 0.2s;
+  }
+  .back-btn:hover { background: rgba(255,230,109,0.1); border-color: var(--accent2); }
+
+  .poster {
+    max-width: 1080px;
+    margin: 0 auto;
+    background: var(--bg);
+    padding: 44px 44px 36px;
+    position: relative;
+  }
+
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; z-index: 0; }
+  .blob1 { top: -80px; right: -80px; width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(232,84,26,0.07) 0%, transparent 70%); }
+  .blob2 { bottom: 200px; left: -80px; width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(78,205,196,0.07) 0%, transparent 70%); }
+
+  /* HEADER */
+  .header { text-align: center; margin-bottom: 32px; position: relative; z-index: 1; }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--dark); color: var(--accent2);
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; padding: 5px 16px; border-radius: 20px; margin-bottom: 16px;
+  }
+  .header h1 { font-size: 34px; font-weight: 800; line-height: 1.25; color: var(--dark); }
+  .header h1 .hl { color: var(--orange); }
+  .header-sub { font-size: 15px; color: var(--text-light); margin-top: 10px; line-height: 1.6; }
+  .header-divider { display: flex; align-items: center; gap: 10px; margin: 16px auto 0; max-width: 400px; opacity: 0.3; }
+  .hd-line { flex: 1; height: 1px; background: var(--text); }
+  .hd-dot { width: 5px; height: 5px; background: var(--orange); border-radius: 50%; }
+
+  /* GRID */
+  .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 18px; margin-bottom: 28px; position: relative; z-index: 1;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 580px) { .grid { grid-template-columns: 1fr; } .poster { padding: 24px 16px; } }
+
+  /* CARD */
+  .card { background: var(--card-bg); border-radius: 18px; border: 1.5px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+  .card-top-bar { height: 4px; width: 100%; }
+  .card-body { padding: 20px 20px 0; flex: 1; }
+  .card-header-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .card-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .card-titles { flex: 1; }
+  .card-en { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; margin-bottom: 2px; display: block; }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--dark); line-height: 1.25; }
+  .card-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #CCC; font-weight: 600; flex-shrink: 0; }
+  .card-desc { font-size: 13px; line-height: 1.7; color: var(--text-light); margin-bottom: 12px; }
+  .card-list { list-style: none; margin-bottom: 12px; }
+  .card-list li { font-size: 12.5px; color: var(--text); line-height: 1.55; padding: 3px 0 3px 18px; position: relative; }
+  .card-list li::before { content: '▸'; position: absolute; left: 0; font-size: 10px; top: 5px; }
+  .card-tip { background: #F8F6F2; border-left: 3px solid var(--orange); border-radius: 0 8px 8px 0; padding: 8px 12px; margin-bottom: 14px; font-size: 12px; line-height: 1.55; color: var(--text); }
+  .card-tip strong { color: var(--orange); font-size: 10.5px; letter-spacing: 0.5px; display: block; margin-bottom: 2px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; }
+  .card-code-block { background: var(--dark); border-radius: 8px; padding: 8px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent2); line-height: 1.6; margin-bottom: 14px; word-break: break-all; }
+  .card-footer { padding: 10px 20px 16px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .tag-orange { background: #FFF0E8; color: #C0430F; }
+  .tag-blue   { background: #E8F2FF; color: #1A5FC0; }
+  .tag-green  { background: #EAFAF0; color: #1A7A40; }
+  .tag-purple { background: #F2EEFF; color: #6B3FC0; }
+  .tag-teal   { background: #E6FAF9; color: #0F8080; }
+  .tag-red    { background: #FFF0F0; color: #C03030; }
+
+  .ic-orange { background: #FFF0E8; } .ic-teal { background: #E6FAF9; }
+  .ic-yellow { background: #FFFAE8; } .ic-purple { background: #F2EEFF; }
+  .ic-green  { background: #EAFAF0; } .ic-red    { background: #FFF0F0; }
+  .ic-blue   { background: #E8F2FF; } .ic-pink   { background: #FFF0F8; }
+  .ic-slate  { background: #EEF0F5; } .ic-amber  { background: #FFF8E8; }
+  .ic-cyan   { background: #E6FAFA; } .ic-lime   { background: #F0FAE8; }
+
+  .bar-orange { background: linear-gradient(90deg,#E8541A,#FF7A45); }
+  .bar-teal   { background: linear-gradient(90deg,#0ABFB8,#4ECDC4); }
+  .bar-yellow { background: linear-gradient(90deg,#F0A800,#FFE066); }
+  .bar-purple { background: linear-gradient(90deg,#7B3FC0,#A86EE0); }
+  .bar-green  { background: linear-gradient(90deg,#1A8A40,#40CC70); }
+  .bar-red    { background: linear-gradient(90deg,#CC2020,#EE5050); }
+  .bar-blue   { background: linear-gradient(90deg,#1A5FC0,#4E90E8); }
+  .bar-pink   { background: linear-gradient(90deg,#CC20A0,#EE60CC); }
+  .bar-slate  { background: linear-gradient(90deg,#445566,#778899); }
+  .bar-amber  { background: linear-gradient(90deg,#C07010,#E0A030); }
+  .bar-cyan   { background: linear-gradient(90deg,#0A8080,#20C0C0); }
+  .bar-lime   { background: linear-gradient(90deg,#4A9020,#80CC40); }
+
+  .acc-orange { color: #E8541A; } .acc-teal   { color: #0ABFB8; }
+  .acc-yellow { color: #C08000; } .acc-purple { color: #7B3FC0; }
+  .acc-green  { color: #1A8A40; } .acc-red    { color: #CC2020; }
+  .acc-blue   { color: #1A5FC0; } .acc-pink   { color: #CC20A0; }
+  .acc-slate  { color: #445566; } .acc-amber  { color: #C07010; }
+  .acc-cyan   { color: #0A8080; } .acc-lime   { color: #4A9020; }
+
+  /* SUMMARY */
+  .summary { background: var(--dark); border-radius: 18px; padding: 28px 36px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 20px; position: relative; z-index: 1; }
+  @media (max-width: 700px) { .summary { grid-template-columns: 1fr; padding: 20px; } }
+  .summary-col h3 { font-size: 13px; font-family: 'IBM Plex Mono', monospace; color: var(--accent2); letter-spacing: 1.5px; margin-bottom: 12px; text-transform: uppercase; }
+  .summary-col ul { list-style: none; }
+  .summary-col ul li { font-size: 13px; color: rgba(255,255,255,0.75); padding: 4px 0 4px 16px; position: relative; line-height: 1.5; }
+  .summary-col ul li::before { content: '→'; position: absolute; left: 0; color: #FF7A45; font-size: 11px; }
+
+  /* FOOTER */
+  .footer { background: linear-gradient(135deg, var(--orange) 0%, #C03A0A 100%); border-radius: 16px; padding: 22px 32px; text-align: center; position: relative; z-index: 1; }
+  .footer-main { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+  .footer-sub { font-size: 13px; color: rgba(255,255,255,0.8); font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; }
+  .credit { text-align: center; margin-top: 14px; font-size: 11px; color: var(--text-light); font-family: 'IBM Plex Mono', monospace; opacity: 0.5; position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+
+<!-- BACK BAR -->
+<div class="back-bar">
+  <a href="index.html" class="back-btn">← กลับหน้าหลัก</a>
+</div>
+
+<div class="poster">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="header">
+    <div class="header-badge">🤖 Claude Code Complete Guide</div>
+    <h1>12 ฟีเจอร์ซ่อนเร้นของ <span class="hl">Claude Code</span><br>ที่จะเปลี่ยนวิธีทำงานของคุณ</h1>
+    <p class="header-sub">คู่มือฉบับสมบูรณ์ · วิธีใช้งาน · ประโยชน์ · เคล็ดลับ · ตัวอย่างจริง</p>
+    <div class="header-divider"><div class="hd-line"></div><div class="hd-dot"></div><div class="hd-line"></div></div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 01 CLAUDE.MD -->
+    <div class="card">
+      <div class="card-top-bar bar-orange"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-orange">📄</div>
+          <div class="card-titles">
+            <span class="card-en acc-orange">Claude.md</span>
+            <div class="card-title">ไฟล์หน่วยความจำโปรเจกต์</div>
+          </div>
+          <span class="card-num">01</span>
+        </div>
+        <p class="card-desc">ไฟล์ Markdown ที่ Claude อ่านอัตโนมัติทุกครั้งที่เริ่มเซสชัน ทำให้ Claude "จำ" บริบทโปรเจกต์ได้โดยไม่ต้องอธิบายซ้ำ</p>
+        <ul class="card-list">
+          <li>บันทึก Tech Stack, Framework, ข้อกำหนดโปรเจกต์</li>
+          <li>กำหนด Coding Style และ Naming Convention</li>
+          <li>ระบุคำสั่ง build, run, test ที่ใช้บ่อย</li>
+          <li>ตั้งกฎห้าม เช่น "อย่าแก้ไขไฟล์ config โดยไม่ถาม"</li>
+          <li>วางไว้ใน root หรือ nested หลายโฟลเดอร์ได้</li>
+        </ul>
+        <div class="card-tip">
+          <strong>💡 เคล็ดลับ</strong>
+          สร้าง CLAUDE.md ใน ~/.claude/ สำหรับกฎ global ที่ใช้ทุกโปรเจกต์ เช่น "ตอบเป็นภาษาไทยเสมอ"
+        </div>
+        <div class="card-code-block">~/.claude/CLAUDE.md → global rules<br>./CLAUDE.md → project-specific rules</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-orange">หน่วยความจำถาวร</span>
+        <span class="tag tag-blue">ไม่ต้องอธิบายซ้ำ</span>
+      </div>
+    </div>
+
+    <!-- 02 PERMISSIONS -->
+    <div class="card">
+      <div class="card-top-bar bar-teal"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-teal">🔐</div>
+          <div class="card-titles">
+            <span class="card-en acc-teal">Permissions</span>
+            <div class="card-title">ระบบจัดการสิทธิ์การเข้าถึง</div>
+          </div>
+          <span class="card-num">02</span>
+        </div>
+        <p class="card-desc">ควบคุมได้ละเอียดว่า Claude จะใช้เครื่องมือใดได้บ้าง ทั้งแบบอนุญาตถาวร อนุญาตครั้งเดียว และห้ามใช้โดยเด็ดขาด</p>
+        <ul class="card-list">
+          <li><strong>Allow</strong> — อนุญาตถาวร ไม่ถามซ้ำ (เช่น อ่านไฟล์)</li>
+          <li><strong>Ask</strong> — ถามทุกครั้งก่อนดำเนินการ</li>
+          <li><strong>Deny</strong> — ห้ามใช้เครื่องมือนั้นโดยสิ้นเชิง</li>
+          <li>กำหนดได้ทั้ง per-session และ per-project</li>
+          <li>ล็อกไม่ให้ลบไฟล์สำคัญโดยอัตโนมัติ</li>
+        </ul>
+        <div class="card-tip">
+          <strong>⚠️ ข้อควรระวัง</strong>
+          ใน production ตั้ง bash เป็น "Ask" เสมอ เพื่อป้องกัน Claude รันคำสั่งอันตรายโดยไม่ตั้งใจ
+        </div>
+        <div class="card-code-block">"permissions": {<br>  "bash": "ask",<br>  "read": "allow",<br>  "write": "ask"<br>}</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-green">ความปลอดภัย</span>
+        <span class="tag tag-blue">ควบคุมละเอียด</span>
+      </div>
+    </div>
+
+    <!-- 03 PLAN MODE -->
+    <div class="card">
+      <div class="card-top-bar bar-yellow"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-yellow">📋</div>
+          <div class="card-titles">
+            <span class="card-en acc-yellow">Plan Mode</span>
+            <div class="card-title">โหมดวางแผนก่อนลงมือทำ</div>
+          </div>
+          <span class="card-num">03</span>
+        </div>
+        <p class="card-desc">Claude สร้างแผนการทำงานให้ดูก่อน โดยไม่แตะไฟล์หรือรันโค้ดใดๆ จนกว่าคุณจะอนุมัติ ลดความผิดพลาดได้มาก</p>
+        <ul class="card-list">
+          <li>วิเคราะห์ปัญหาและเสนอแนวทางแก้ไขหลายแบบ</li>
+          <li>แสดงรายการไฟล์ที่จะถูกสร้าง/แก้ไข/ลบ</li>
+          <li>ช่วยจับข้อผิดพลาดในแผนก่อนที่จะสายเกินไป</li>
+          <li>เหมาะสำหรับงาน refactor ขนาดใหญ่ หรืองาน critical</li>
+          <li>ใช้ร่วมกับ Checkpoints เพื่อความปลอดภัยสูงสุด</li>
+        </ul>
+        <div class="card-tip">
+          <strong>🎯 วิธีใช้งาน</strong>
+          กด Shift+Tab หรือพิมพ์ "วางแผนก่อน อย่าลงมือทำ" เพื่อเข้าสู่ Plan Mode ได้ทันที
+        </div>
+        <div class="card-code-block">Shift+Tab → เปิด Plan Mode<br>"plan only, don't execute yet"</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-orange">ป้องกันความผิดพลาด</span>
+        <span class="tag tag-purple">ตรวจก่อนทำ</span>
+      </div>
+    </div>
+
+    <!-- 04 CHECKPOINTS -->
+    <div class="card">
+      <div class="card-top-bar bar-purple"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-purple">⏱️</div>
+          <div class="card-titles">
+            <span class="card-en acc-purple">Checkpoints</span>
+            <div class="card-title">จุดบันทึกสถานะอัตโนมัติ</div>
+          </div>
+          <span class="card-num">04</span>
+        </div>
+        <p class="card-desc">Claude สร้าง snapshot ของโค้ดอัตโนมัติก่อนทุกการเปลี่ยนแปลง ย้อนกลับได้ทันทีหากผลลัพธ์ไม่เป็นที่พอใจ</p>
+        <ul class="card-list">
+          <li>บันทึกอัตโนมัติก่อนทุกครั้งที่แก้ไขไฟล์</li>
+          <li>ย้อนกลับไปจุดใดก็ได้ในประวัติการทำงาน</li>
+          <li>ดูความแตกต่างระหว่าง checkpoint (diff view)</li>
+          <li>ทดลองแนวทางหลายแบบโดยไม่กลัวพัง</li>
+          <li>ทำงานคู่กับ git เพื่อความปลอดภัยเป็นชั้นๆ</li>
+        </ul>
+        <div class="card-tip">
+          <strong>💡 เคล็ดลับ</strong>
+          บอก Claude ว่า "สร้าง checkpoint ก่อน" ก่อนทำงาน risky เช่น refactor ครั้งใหญ่หรือลบ module
+        </div>
+        <div class="card-code-block">v1 (เริ่มต้น) → v2 (ฟีเจอร์ A)<br>v3 ← อยู่ตรงนี้<br>↩ ย้อนกลับ v2 ได้ทันที</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-purple">ย้อนเวลาได้</span>
+        <span class="tag tag-green">ทดลองอย่างปลอดภัย</span>
+      </div>
+    </div>
+
+    <!-- 05 SKILLS -->
+    <div class="card">
+      <div class="card-top-bar bar-green"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-green">🧩</div>
+          <div class="card-titles">
+            <span class="card-en acc-green">Skills</span>
+            <div class="card-title">ชุดคำสั่งนำกลับมาใช้ซ้ำได้</div>
+          </div>
+          <span class="card-num">05</span>
+        </div>
+        <p class="card-desc">บันทึกวิธีทำงานที่ซับซ้อนไว้เป็น Skill แล้ว Claude จะอ่านและปฏิบัติตามโดยอัตโนมัติทุกครั้งที่งานนั้นเกิดขึ้น</p>
+        <ul class="card-list">
+          <li>สร้าง Skill สำหรับงานที่ทำซ้ำบ่อย เช่น "สร้าง component"</li>
+          <li>เก็บ best practice ของทีมไว้ใน .claude/skills/</li>
+          <li>Skill สามารถ import Skill อื่นได้ (nested skills)</li>
+          <li>แชร์ Skill ข้ามโปรเจกต์ในทีมผ่าน git ได้</li>
+          <li>ระบุเงื่อนไขเรียกใช้ด้วย keyword หรือ pattern</li>
+        </ul>
+        <div class="card-tip">
+          <strong>📂 ตัวอย่าง Skill</strong>
+          สร้าง skill "สร้าง API endpoint" ที่ระบุ pattern ของ controller, route, validation และ test ไว้ในที่เดียว
+        </div>
+        <div class="card-code-block">.claude/skills/<br>  create-component.md<br>  deploy-firebase.md<br>  write-thai-test.md</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-green">นำกลับมาใช้ได้</span>
+        <span class="tag tag-blue">มาตรฐานทีม</span>
+      </div>
+    </div>
+
+    <!-- 06 HOOKS -->
+    <div class="card">
+      <div class="card-top-bar bar-red"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-red">🪝</div>
+          <div class="card-titles">
+            <span class="card-en acc-red">Hooks</span>
+            <div class="card-title">ทริกเกอร์การทำงานอัตโนมัติ</div>
+          </div>
+          <span class="card-num">06</span>
+        </div>
+        <p class="card-desc">กำหนดสคริปต์ที่รันอัตโนมัติในช่วงเวลาสำคัญของ workflow เหมือน Git Hooks แต่ทรงพลังและยืดหยุ่นกว่ามาก</p>
+        <ul class="card-list">
+          <li><strong>PreToolUse</strong> — รันก่อน Claude ใช้เครื่องมือ (ตรวจสอบ, log)</li>
+          <li><strong>PostToolUse</strong> — รันหลังจากใช้เครื่องมือ (format, lint)</li>
+          <li><strong>Notification</strong> — รับแจ้งเตือนเมื่อ Claude ทำงานเสร็จ</li>
+          <li><strong>Stop</strong> — ทำงานเมื่อ session จบลง (cleanup, report)</li>
+          <li>รัน shell script, Python, Node.js ได้ทุกอย่าง</li>
+        </ul>
+        <div class="card-tip">
+          <strong>🔥 ใช้งานจริง</strong>
+          ตั้ง PostToolUse hook รัน prettier --write อัตโนมัติหลังทุกครั้งที่ Claude แก้ไขไฟล์ JS
+        </div>
+        <div class="card-code-block">"hooks": {<br>  "PostToolUse": [<br>    "npm run lint --fix"<br>  ]<br>}</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-red">อัตโนมัติ 100%</span>
+        <span class="tag tag-orange">Workflow ทรงพลัง</span>
+      </div>
+    </div>
+
+    <!-- 07 MCP -->
+    <div class="card">
+      <div class="card-top-bar bar-blue"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-blue">🔌</div>
+          <div class="card-titles">
+            <span class="card-en acc-blue">MCP</span>
+            <div class="card-title">เชื่อมต่อระบบและบริการภายนอก</div>
+          </div>
+          <span class="card-num">07</span>
+        </div>
+        <p class="card-desc">Model Context Protocol มาตรฐานเปิดสำหรับเชื่อม Claude เข้ากับเครื่องมือและข้อมูลภายนอกได้ไม่จำกัด</p>
+        <ul class="card-list">
+          <li><strong>ฐานข้อมูล</strong>: PostgreSQL, Firestore, Supabase, MySQL</li>
+          <li><strong>บริการ Cloud</strong>: GitHub, Vercel, Cloudflare, AWS</li>
+          <li><strong>เครื่องมือทีม</strong>: Slack, Gmail, Google Drive, Notion</li>
+          <li>สร้าง MCP server เองด้วย Python หรือ TypeScript</li>
+          <li>รัน MCP server ได้ทั้งแบบ local และ remote URL</li>
+        </ul>
+        <div class="card-tip">
+          <strong>🚀 กรณีใช้งานจริง</strong>
+          ติดตั้ง firebase-mcp แล้ว Claude อ่านเขียน Firestore ได้โดยตรง ไม่ต้องเขียนโค้ดเชื่อมเองเลย
+        </div>
+        <div class="card-code-block">claude mcp add firebase \<br>  --transport http \<br>  --url http://localhost:3000</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-blue">เชื่อมทุกระบบ</span>
+        <span class="tag tag-teal">มาตรฐานเปิด</span>
+      </div>
+    </div>
+
+    <!-- 08 PLUGINS -->
+    <div class="card">
+      <div class="card-top-bar bar-pink"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-pink">🔧</div>
+          <div class="card-titles">
+            <span class="card-en acc-pink">Plugins</span>
+            <div class="card-title">ขยายความสามารถแบบไม่ต้องโค้ด</div>
+          </div>
+          <span class="card-num">08</span>
+        </div>
+        <p class="card-desc">เพิ่มความสามารถให้ Claude ด้วย integration สำเร็จรูป รองรับเครื่องมือยอดนิยมในวงการพัฒนาซอฟต์แวร์</p>
+        <ul class="card-list">
+          <li><strong>Docker</strong> — รัน container และจัดการ image</li>
+          <li><strong>pytest / Jest</strong> — รัน test suite และรายงานผล</li>
+          <li><strong>ESLint / Prettier</strong> — ตรวจและจัดรูปแบบโค้ด</li>
+          <li><strong>Playwright</strong> — ควบคุม browser อัตโนมัติ</li>
+          <li>เพิ่ม custom plugin ด้วยการนิยาม tool schema เอง</li>
+        </ul>
+        <div class="card-tip">
+          <strong>💡 เคล็ดลับ</strong>
+          ใช้ Playwright plugin ให้ Claude ทดสอบ UI บน Chrome จริงๆ แทนการเดาว่าหน้าตาจะเป็นยังไง
+        </div>
+        <div class="card-code-block">Plugin ยอดนิยม:<br>Docker · Playwright · pytest<br>ESLint · GitHub Actions</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-purple">ไม่ต้องโค้ดเพิ่ม</span>
+        <span class="tag tag-green">เครื่องมือครบ</span>
+      </div>
+    </div>
+
+    <!-- 09 CONTEXT -->
+    <div class="card">
+      <div class="card-top-bar bar-slate"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-slate">🎯</div>
+          <div class="card-titles">
+            <span class="card-en acc-slate">Context Window</span>
+            <div class="card-title">ควบคุมสิ่งที่ Claude มองเห็น</div>
+          </div>
+          <span class="card-num">09</span>
+        </div>
+        <p class="card-desc">จัดการ Context อย่างชาญฉลาด ส่งเฉพาะข้อมูลที่จำเป็นให้ Claude เพื่อประหยัด token และได้คำตอบที่แม่นยำขึ้น</p>
+        <ul class="card-list">
+          <li>เลือกไฟล์ที่ต้องการให้ Claude อ่านด้วย #ชื่อไฟล์</li>
+          <li>ล้าง context เพื่อเริ่มต้นใหม่เมื่อพูดถึงงานอื่น</li>
+          <li>กำหนด include/exclude ไฟล์ประเภทใดก็ได้</li>
+          <li>ดู context ที่ Claude กำลังใช้แบบ real-time</li>
+          <li>ตั้งค่า gitignore-style เพื่อกรองไฟล์ที่ไม่ต้องการ</li>
+        </ul>
+        <div class="card-tip">
+          <strong>⚡ เพิ่มประสิทธิภาพ</strong>
+          ระบุไฟล์ที่เกี่ยวข้องโดยตรงแทนการให้ Claude ค้นหาเอง ประหยัด token และได้คำตอบเร็วกว่า
+        </div>
+        <div class="card-code-block">"แก้ไข #src/auth.js ให้รองรับ<br>JWT token แบบ refresh token"</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-blue">ประหยัด Token</span>
+        <span class="tag tag-green">คำตอบแม่นยำ</span>
+      </div>
+    </div>
+
+    <!-- 10 SLASH COMMANDS -->
+    <div class="card">
+      <div class="card-top-bar bar-amber"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-amber">⚡</div>
+          <div class="card-titles">
+            <span class="card-en acc-amber">Slash Commands</span>
+            <div class="card-title">คำสั่งลัดประหยัดเวลา</div>
+          </div>
+          <span class="card-num">10</span>
+        </div>
+        <p class="card-desc">บันทึก prompt ที่ใช้บ่อยเป็นคำสั่งลัด เรียกใช้ได้ทันทีด้วยการพิมพ์ /ชื่อคำสั่ง ไม่ต้องพิมพ์ prompt ยาวซ้ำอีกต่อไป</p>
+        <ul class="card-list">
+          <li>Built-in: /clear · /compact · /review · /help</li>
+          <li>สร้าง custom command โดยบันทึกไฟล์ .md ใน .claude/commands/</li>
+          <li>รองรับ parameter เช่น /deploy staging หรือ /deploy prod</li>
+          <li>Command ใช้ได้ทุก project หรือเฉพาะ project ก็ได้</li>
+          <li>แชร์ command ข้ามทีมผ่าน git repository</li>
+        </ul>
+        <div class="card-tip">
+          <strong>🎯 คำสั่งที่นิยมใช้</strong>
+          /review — code review ทั้ง branch · /test — รัน test suite · /deploy — push และ deploy อัตโนมัติ
+        </div>
+        <div class="card-code-block">.claude/commands/<br>  review.md → /review<br>  deploy.md → /deploy<br>  doc.md → /doc</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-orange">รวดเร็ว</span>
+        <span class="tag tag-green">ทำซ้ำได้ทุกเวลา</span>
+      </div>
+    </div>
+
+    <!-- 11 COMPACTION -->
+    <div class="card">
+      <div class="card-top-bar bar-cyan"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-cyan">🗜️</div>
+          <div class="card-titles">
+            <span class="card-en acc-cyan">Compaction</span>
+            <div class="card-title">บีบอัดบทสนทนายาว</div>
+          </div>
+          <span class="card-num">11</span>
+        </div>
+        <p class="card-desc">เมื่อบทสนทนายาวเกินไปจน context เกือบเต็ม Claude จะสรุปประวัติให้กระชับโดยอัตโนมัติ โดยไม่สูญเสียสาระสำคัญ</p>
+        <ul class="card-list">
+          <li>ทำงานอัตโนมัติเมื่อ context ใกล้เต็ม (200k+ tokens)</li>
+          <li>เรียกใช้เองด้วย /compact ได้ทุกเมื่อที่ต้องการ</li>
+          <li>Claude สรุป แต่เก็บโค้ดสำคัญและ decision ไว้</li>
+          <li>ประหยัดค่าใช้จ่าย API ได้ถึง 70% ในงานระยะยาว</li>
+          <li>ดีกว่าการเริ่ม session ใหม่ เพราะยังจำ context ได้</li>
+        </ul>
+        <div class="card-tip">
+          <strong>💰 ประหยัดเงิน</strong>
+          รัน /compact ก่อนเริ่มงานใหม่ในวันถัดไป แทนการเปิด session ใหม่ที่ต้องอธิบาย context ซ้ำทั้งหมด
+        </div>
+        <div class="card-code-block">/compact → สรุป context ทันที<br>ประหยัด token สูงสุด 70%<br>ยังจำบริบทเดิมได้ทั้งหมด</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-teal">ประหยัด Token</span>
+        <span class="tag tag-green">ไม่สูญเสียบริบท</span>
+      </div>
+    </div>
+
+    <!-- 12 SUBAGENTS -->
+    <div class="card">
+      <div class="card-top-bar bar-lime"></div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-icon ic-lime">🤖</div>
+          <div class="card-titles">
+            <span class="card-en acc-lime">Subagents</span>
+            <div class="card-title">ทีม AI ทำงานคู่ขนานกัน</div>
+          </div>
+          <span class="card-num">12</span>
+        </div>
+        <p class="card-desc">ให้ Claude สร้างทีม AI ขนาดเล็กทำงานพร้อมกันแบบ parallel เหมาะสำหรับงานซับซ้อนที่แบ่งออกเป็นส่วนๆ ได้</p>
+        <ul class="card-list">
+          <li>Lead Agent แบ่งงานและส่งให้ Subagent แต่ละตัว</li>
+          <li>Subagent ทำงานพร้อมกัน (ไม่รอคิว) ประหยัดเวลามาก</li>
+          <li>แต่ละ agent มี context, tools และ scope ของตัวเอง</li>
+          <li>รวบรวมผลลัพธ์และ merge เข้าด้วยกันอัตโนมัติ</li>
+          <li>ใช้ได้กับ: test, build, scrape, analyze พร้อมกัน</li>
+        </ul>
+        <div class="card-tip">
+          <strong>🚀 กรณีใช้งาน</strong>
+          Agent 1 เขียนโค้ด · Agent 2 เขียน test · Agent 3 เขียน docs — ทำพร้อมกัน เสร็จใน 1/3 ของเวลา
+        </div>
+        <div class="card-code-block">Lead Agent<br>├── Agent A: เขียนโค้ด<br>├── Agent B: เขียน test<br>└── Agent C: เขียน docs</div>
+      </div>
+      <div class="card-footer">
+        <span class="tag tag-green">ทำงานพร้อมกัน</span>
+        <span class="tag tag-blue">อนาคต AI</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <div class="summary-col">
+      <h3>📁 จัดการโปรเจกต์</h3>
+      <ul>
+        <li>Claude.md — บริบทถาวรไม่ต้องอธิบายซ้ำ</li>
+        <li>Checkpoints — ย้อนเวลากลับได้ทุกจุด</li>
+        <li>Context — เลือกสิ่งที่ AI มองเห็น</li>
+        <li>Compaction — ประหยัด token ในงานยาว</li>
+      </ul>
+    </div>
+    <div class="summary-col">
+      <h3>⚙️ อัตโนมัติ & ขยายได้</h3>
+      <ul>
+        <li>Hooks — ทริกเกอร์ทุก event สำคัญ</li>
+        <li>Skills — ชุดคำสั่งนำกลับมาใช้ซ้ำ</li>
+        <li>Slash Commands — คำสั่งลัดทรงพลัง</li>
+        <li>Subagents — ทีม AI ทำงานคู่ขนาน</li>
+      </ul>
+    </div>
+    <div class="summary-col">
+      <h3>🔗 เชื่อมต่อ & ปลอดภัย</h3>
+      <ul>
+        <li>MCP — เชื่อมทุกระบบภายนอก</li>
+        <li>Permissions — ควบคุมสิทธิ์ละเอียด</li>
+        <li>Plugins — ขยายโดยไม่ต้องโค้ด</li>
+        <li>Plan Mode — วางแผนก่อนลงมือทำ</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-main">🚀 เริ่มใช้ Claude Code วันนี้ — ฟรีสำหรับนักพัฒนาทุกคน</div>
+    <div class="footer-sub">claude.ai/code &nbsp;·&nbsp; docs.anthropic.com &nbsp;·&nbsp; github.com/anthropics/claude-code</div>
+  </div>
+  <div class="credit">Analytics Vidhya · แปลและขยายความเป็นภาษาไทยฉบับสมบูรณ์</div>
+</div>
+</body>
+</html>
