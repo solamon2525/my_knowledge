@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ศิลปะการสั่งการ AI — My Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #0f1829;
+    --card: #141f35;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: rgba(0,212,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Back button */
+  .back-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,15,30,0.9);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1.2rem;
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.8rem;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .back-btn:hover {
+    background: rgba(0,212,255,0.1);
+    border-color: var(--accent);
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.2rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 3rem 0 2.5rem;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.35rem 1rem;
+    border-radius: 2px;
+    margin-bottom: 1.2rem;
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,255,0); }
+    50% { box-shadow: 0 0 12px 2px rgba(0,212,255,0.3); }
+  }
+
+  .hero h1 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.8rem;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+    margin-bottom: 2rem;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex-shrink: 0;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.8rem;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--accent); border-color: var(--accent); }
+  .tab.active {
+    background: rgba(0,212,255,0.1);
+    color: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,212,255,0.2);
+  }
+
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(0,212,255,0.35); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(0,212,255,0.15); }
+  .icon-purple { background: rgba(124,58,237,0.2); }
+  .icon-green { background: rgba(16,185,129,0.15); }
+  .icon-amber { background: rgba(245,158,11,0.15); }
+
+  .card h3 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .card p, .card li {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: #94a3b8;
+  }
+  .card ul { padding-left: 1.2rem; }
+  .card li { margin-bottom: 0.3rem; }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    font-family: 'Chakra Petch', sans-serif;
+    margin: 0.1rem;
+  }
+  .tag-blue { background: rgba(0,212,255,0.12); color: var(--accent); }
+  .tag-purple { background: rgba(124,58,237,0.2); color: #a78bfa; }
+  .tag-green { background: rgba(16,185,129,0.12); color: var(--accent3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: var(--warn); }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+  @media(max-width: 600px) { .compare { grid-template-columns: 1fr; } }
+
+  .compare-block {
+    border-radius: 6px;
+    padding: 1rem;
+    font-size: 0.88rem;
+  }
+  .bad {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+  }
+  .good {
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
+  }
+  .bad .label { color: #f87171; font-weight: 600; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 0.5rem; }
+  .good .label { color: var(--accent3); font-weight: 600; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 0.5rem; }
+  .compare-block code {
+    font-family: monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+  }
+
+  .formula {
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 6px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.9rem;
+    color: #c4b5fd;
+    line-height: 1.8;
+  }
+
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+  }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+    align-items: flex-start;
+  }
+  .steps li::before {
+    content: counter(step);
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(0,212,255,0.1);
+    border: 1px solid var(--accent);
+    min-width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .steps li .step-content h4 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.9rem;
+    color: #fff;
+    margin-bottom: 0.3rem;
+  }
+  .steps li .step-content p {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.65;
+  }
+
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .tool-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tool-card:hover {
+    border-color: rgba(0,212,255,0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .tool-card .tool-icon { font-size: 1.6rem; margin-bottom: 0.7rem; }
+  .tool-card h4 { font-family: 'Chakra Petch', sans-serif; font-size: 0.9rem; color: #fff; margin-bottom: 0.4rem; }
+  .tool-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+  .tool-card .tool-use { font-size: 0.75rem; color: var(--accent); margin-top: 0.5rem; }
+
+  .practice-prompt {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    font-size: 0.88rem;
+    color: #94a3b8;
+    margin: 0.8rem 0;
+    line-height: 1.7;
+  }
+
+  .quiz-btn {
+    background: rgba(0,212,255,0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.82rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 0.3rem;
+  }
+  .quiz-btn:hover { background: rgba(0,212,255,0.2); }
+  .quiz-btn.correct { background: rgba(16,185,129,0.2); border-color: var(--accent3); color: var(--accent3); }
+  .quiz-btn.wrong { background: rgba(239,68,68,0.1); border-color: #f87171; color: #f87171; }
+
+  .feedback { margin-top: 0.8rem; font-size: 0.85rem; min-height: 1.5rem; }
+  .feedback.ok { color: var(--accent3); }
+  .feedback.err { color: #f87171; }
+
+  .section-title {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 1.4rem;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .section-sub {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 1.8rem;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.2rem 0;
+  }
+
+  .hi { color: var(--accent); font-weight: 600; }
+  .hi-purple { color: #a78bfa; font-weight: 600; }
+  .hi-green { color: var(--accent3); font-weight: 600; }
+  .hi-amber { color: var(--warn); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- BACK BAR -->
+<div class="back-bar">
+  <a href="index.html" class="back-btn">← กลับหน้าหลัก</a>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="hero-badge">🎓 AI Literacy Course</div>
+    <h1>ศิลปะการสั่งการ AI<br>อย่างมีประสิทธิภาพ</h1>
+    <p>เรียนรู้เทคนิค Prompt Engineering และเครื่องมือที่ใช้ร่วมกับ AI เพื่อผลลัพธ์ที่ดีที่สุด</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('basics', this)">🧠 หลักการพื้นฐาน</button>
+    <button class="tab" onclick="showTab('techniques', this)">⚡ เทคนิคขั้นสูง</button>
+    <button class="tab" onclick="showTab('tools', this)">🛠️ เครื่องมือ</button>
+    <button class="tab" onclick="showTab('examples', this)">📋 ตัวอย่างจริง</button>
+    <button class="tab" onclick="showTab('practice', this)">🎯 ฝึกปฏิบัติ</button>
+  </div>
+
+  <!-- BASICS -->
+  <div class="section active" id="basics">
+    <div class="section-title">หลักการพื้นฐาน</div>
+    <div class="section-sub">ทำไม Prompt ที่ดีถึงสำคัญ และโครงสร้างที่ถูกต้องคืออะไร</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-blue">🤖</div>
+        <h3>AI คิดอย่างไร?</h3>
+      </div>
+      <p>AI ไม่ได้ "รู้" สิ่งที่คุณต้องการโดยอัตโนมัติ มันจะ <span class="hi">ตีความ</span> จากคำที่คุณพิมพ์เท่านั้น ยิ่ง Prompt ชัดเจน ยิ่งได้ผลลัพธ์ตรงใจ</p>
+      <hr class="divider">
+      <div class="compare">
+        <div class="compare-block bad">
+          <div class="label">❌ คลุมเครือ</div>
+          <code>"ช่วยเรื่องงาน"</code>
+        </div>
+        <div class="compare-block good">
+          <div class="label">✅ ชัดเจน</div>
+          <code>"เขียนอีเมลขอโทษลูกค้า ภาษาสุภาพ 3 ย่อหน้า เรื่องส่งของล่าช้า 2 วัน"</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-purple">📐</div>
+        <h3>สูตร RCTF — โครงสร้าง Prompt ที่ดี</h3>
+      </div>
+      <div class="formula">
+        <strong>R</strong>ole — บทบาทของ AI<br>
+        <strong>C</strong>ontext — บริบท / ข้อมูลพื้นฐาน<br>
+        <strong>T</strong>ask — งานที่ต้องทำ (ชัดเจน)<br>
+        <strong>F</strong>ormat — รูปแบบผลลัพธ์ที่ต้องการ
+      </div>
+      <p><span class="hi">ตัวอย่าง:</span> "คุณคือ<span class="hi-purple">ครูประถมศึกษา (Role)</span> นักเรียนอายุ 8 ปี เรียนภาษาไทย <span class="hi-green">(Context)</span> สร้างแบบฝึกหัดเติมคำในช่องว่าง <span class="hi-amber">(Task)</span> จำนวน 5 ข้อ ในรูปแบบ HTML ที่พิมพ์ออกได้ <span class="hi">(Format)</span>"</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-green">💡</div>
+        <h3>5 หลักการที่ต้องจำ</h3>
+      </div>
+      <ul class="steps">
+        <li><div class="step-content"><h4>เฉพาะเจาะจง (Specific)</h4><p>ระบุรายละเอียดให้ครบ: ใคร อะไร กี่อัน ยาวแค่ไหน ใช้ทำอะไร</p></div></li>
+        <li><div class="step-content"><h4>ให้บริบท (Context)</h4><p>บอก AI ว่าใครเป็นผู้รับผลลัพธ์ สถานการณ์คืออะไร</p></div></li>
+        <li><div class="step-content"><h4>ระบุรูปแบบ (Format)</h4><p>ต้องการ bullet list, ตาราง, โค้ด, หรือย่อหน้า? บอกให้ชัด</p></div></li>
+        <li><div class="step-content"><h4>ให้ตัวอย่าง (Examples)</h4><p>ถ้ามีตัวอย่างงานที่ชอบ ใส่เข้าไปใน Prompt เลย</p></div></li>
+        <li><div class="step-content"><h4>ทดสอบ &amp; ปรับ (Iterate)</h4><p>ไม่ได้ผลครั้งแรก? ปรับ Prompt และลองใหม่ — เป็นเรื่องปกติมาก</p></div></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TECHNIQUES -->
+  <div class="section" id="techniques">
+    <div class="section-title">เทคนิคขั้นสูง</div>
+    <div class="section-sub">วิธีดึงประสิทธิภาพสูงสุดจาก AI</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-purple">🧩</div>
+        <h3>Chain-of-Thought — ให้ AI คิดทีละขั้น</h3>
+      </div>
+      <p>เพิ่มวลี <span class="hi">"คิดทีละขั้นตอน"</span> หรือ <span class="hi">"อธิบายเหตุผลก่อนตอบ"</span> ช่วยให้ AI แก้ปัญหาซับซ้อนได้ดีขึ้น</p>
+      <div class="compare">
+        <div class="compare-block bad">
+          <div class="label">❌ ธรรมดา</div>
+          <code>"ข้อสอบนี้ตอบว่าอะไร?"</code>
+        </div>
+        <div class="compare-block good">
+          <div class="label">✅ Chain-of-Thought</div>
+          <code>"วิเคราะห์โจทย์นี้ทีละขั้น แล้วระบุคำตอบพร้อมเหตุผล"</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-blue">🎭</div>
+        <h3>Role Prompting — กำหนดบทบาท</h3>
+      </div>
+      <p>บอก AI ว่าควรเป็น "ใคร" เพื่อปรับน้ำเสียง ความเชี่ยวชาญ และสไตล์การตอบ</p>
+      <div class="practice-prompt">
+        🔹 <span class="hi">"คุณคือนักออกแบบ UX มืออาชีพ"</span> → ตอบในมุมมองการใช้งาน<br>
+        🔹 <span class="hi">"คุณคือครูสอนภาษาไทย ป.3"</span> → ใช้ภาษาเด็กเข้าใจง่าย<br>
+        🔹 <span class="hi">"คุณคือนักวิเคราะห์ข้อมูล"</span> → ให้ตัวเลข สถิติ เหตุผล
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-green">📝</div>
+        <h3>Few-Shot Prompting — สอนด้วยตัวอย่าง</h3>
+      </div>
+      <p>ใส่ตัวอย่าง input → output ก่อน แล้วให้ทำรูปแบบเดิม</p>
+      <div class="practice-prompt">
+        <span class="hi-purple">ตัวอย่าง:</span><br>
+        คำ: แมว → ประโยค: "แมวตัวนี้ขนนุ่มมาก"<br>
+        คำ: ดอกไม้ → ประโยค: "ดอกไม้ในสวนบานสะพรั่ง"<br>
+        <br>
+        ตอนนี้ทำเหมือนกัน:<br>
+        คำ: ท้องฟ้า → ประโยค: <span class="hi">???</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-amber">🚫</div>
+        <h3>Negative Prompting — บอกสิ่งที่ไม่ต้องการ</h3>
+      </div>
+      <p>ระบุสิ่งที่ <span class="hi-amber">ไม่ต้องการ</span> ช่วยตัดสิ่งที่ไม่เกี่ยวออก</p>
+      <div class="compare">
+        <div class="compare-block bad">
+          <div class="label">❌ ไม่มี Constraint</div>
+          <code>"อธิบาย AI ให้ฉันฟัง"</code>
+        </div>
+        <div class="compare-block good">
+          <div class="label">✅ มี Constraint</div>
+          <code>"อธิบาย AI ให้นักเรียน ป.4 ฟัง ไม่ใช้ศัพท์เทคนิค ไม่เกิน 5 ประโยค"</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-blue">🔄</div>
+        <h3>Prompt Chaining — แบ่งงานใหญ่เป็นชิ้นเล็ก</h3>
+      </div>
+      <ul class="steps">
+        <li><div class="step-content"><h4>Prompt 1: วางโครงร่าง</h4><p>"วางหัวข้อหลัก 5 ข้อสำหรับบทเรียนเรื่อง..."</p></div></li>
+        <li><div class="step-content"><h4>Prompt 2: ขยายแต่ละหัวข้อ</h4><p>"นำหัวข้อที่ 2 มาเขียนเป็นเนื้อหา 2 ย่อหน้า"</p></div></li>
+        <li><div class="step-content"><h4>Prompt 3: สร้างแบบฝึกหัด</h4><p>"จากเนื้อหาด้านบน สร้างคำถาม 3 ข้อ"</p></div></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="section" id="tools">
+    <div class="section-title">เครื่องมือที่ใช้ร่วมกับ AI</div>
+    <div class="section-sub">เครื่องมือแต่ละอย่างเหมาะกับงานประเภทไหน</div>
+
+    <div class="tool-grid">
+      <div class="tool-card">
+        <div class="tool-icon">💬</div>
+        <h4>Claude / ChatGPT</h4>
+        <p>AI สนทนา เขียนเนื้อหา วิเคราะห์ข้อมูล และโค้ด</p>
+        <div class="tool-use">→ งานเขียน, อธิบาย, ตอบคำถาม</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🎨</div>
+        <h4>Midjourney / DALL-E</h4>
+        <p>สร้างภาพจาก Prompt ข้อความ</p>
+        <div class="tool-use">→ สื่อการสอน, โปสเตอร์</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🔍</div>
+        <h4>Perplexity AI</h4>
+        <p>ค้นหาข้อมูลล่าสุดจากอินเทอร์เน็ต พร้อมแหล่งอ้างอิง</p>
+        <div class="tool-use">→ ค้นคว้า, ตรวจข้อเท็จจริง</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">📊</div>
+        <h4>Notion AI</h4>
+        <p>AI ในแพลตฟอร์มจัดการงานและเอกสาร</p>
+        <div class="tool-use">→ จดบันทึก, สรุปประชุม</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🎵</div>
+        <h4>Suno / Udio</h4>
+        <p>สร้างเพลงจากคำอธิบาย</p>
+        <div class="tool-use">→ เพลงประกอบการสอน</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🎬</div>
+        <h4>Runway / Kling</h4>
+        <p>สร้างวิดีโอจากข้อความหรือภาพ</p>
+        <div class="tool-use">→ สื่อวิดีโอการเรียน</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">💻</div>
+        <h4>GitHub Copilot</h4>
+        <p>AI ช่วยเขียนโค้ดแบบ Real-time</p>
+        <div class="tool-use">→ พัฒนาโปรแกรม, เกม</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">📑</div>
+        <h4>Google NotebookLM</h4>
+        <p>อัปโหลดเอกสาร แล้วถามคำถามกับเนื้อหา</p>
+        <div class="tool-use">→ สรุปหนังสือ, วิจัย</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem;">
+      <div class="card-header">
+        <div class="icon icon-amber">⚖️</div>
+        <h3>เลือกเครื่องมือให้เหมาะกับงาน</h3>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.5rem;">
+        <div style="background: rgba(0,212,255,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem;">
+          <div style="font-family: 'Chakra Petch', sans-serif; font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">เขียน / วิเคราะห์</div>
+          <p style="font-size: 0.82rem; color: #94a3b8;">Claude, ChatGPT, Gemini</p>
+        </div>
+        <div style="background: rgba(124,58,237,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem;">
+          <div style="font-family: 'Chakra Petch', sans-serif; font-size: 0.8rem; color: #a78bfa; margin-bottom: 0.5rem;">สร้างภาพ</div>
+          <p style="font-size: 0.82rem; color: #94a3b8;">Midjourney, DALL-E, Stable Diffusion</p>
+        </div>
+        <div style="background: rgba(16,185,129,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem;">
+          <div style="font-family: 'Chakra Petch', sans-serif; font-size: 0.8rem; color: var(--accent3); margin-bottom: 0.5rem;">ค้นหาข้อมูล</div>
+          <p style="font-size: 0.82rem; color: #94a3b8;">Perplexity, Bing AI, Google Gemini</p>
+        </div>
+        <div style="background: rgba(245,158,11,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem;">
+          <div style="font-family: 'Chakra Petch', sans-serif; font-size: 0.8rem; color: var(--warn); margin-bottom: 0.5rem;">สร้างสื่อมัลติมีเดีย</div>
+          <p style="font-size: 0.82rem; color: #94a3b8;">Suno (เพลง), Runway (วิดีโอ), ElevenLabs (เสียง)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLES -->
+  <div class="section" id="examples">
+    <div class="section-title">ตัวอย่างจริงสำหรับครู</div>
+    <div class="section-sub">Prompt ที่ใช้ได้จริงในบริบทโรงเรียน</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-green">📚</div>
+        <h3>สร้างแผนการสอน</h3>
+      </div>
+      <div class="practice-prompt">
+        <span class="hi">Prompt:</span><br>
+        "คุณคือครูภาษาไทยประถมศึกษาปีที่ 3 สร้างแผนการสอนเรื่อง <span class="hi-purple">'การแต่งประโยค'</span> สำหรับนักเรียน 30 คน เวลา 50 นาที<br><br>
+        รูปแบบ:<br>
+        - จุดประสงค์การเรียนรู้ (3 ข้อ)<br>
+        - กิจกรรมแบ่งเป็น 3 ช่วง (นำเข้า / สอน / สรุป)<br>
+        - สื่อที่ใช้<br>
+        - การวัดผล<br><br>
+        ใช้กิจกรรมที่สนุก เน้นการมีส่วนร่วม"
+      </div>
+      <div style="margin-top: 0.5rem;">
+        <span class="tag tag-green">✓ มี Role</span>
+        <span class="tag tag-blue">✓ มี Context</span>
+        <span class="tag tag-purple">✓ ระบุ Format</span>
+        <span class="tag tag-amber">✓ ระบุ Tone</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-blue">✍️</div>
+        <h3>สร้างข้อสอบ</h3>
+      </div>
+      <div class="practice-prompt">
+        <span class="hi">Prompt:</span><br>
+        "สร้างข้อสอบปรนัย 4 ตัวเลือก จำนวน <span class="hi-purple">10 ข้อ</span> วิชาวิทยาศาสตร์ ป.4 เรื่อง <span class="hi-purple">'ระบบสุริยะ'</span><br><br>
+        กระจายระดับ: ความจำ 3 ข้อ, ความเข้าใจ 4 ข้อ, ประยุกต์ 3 ข้อ<br>
+        ออกเป็น JSON: { id, question, choices[4], answer, level }<br>
+        ใช้ภาษาที่เด็ก ป.4 เข้าใจได้"
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-purple">🎮</div>
+        <h3>สร้างเกมการศึกษา (สำหรับ Dev)</h3>
+      </div>
+      <div class="practice-prompt">
+        <span class="hi">Prompt:</span><br>
+        "สร้าง HTML เกม Quiz แบบ Single-file ไม่ใช้ Library ภายนอก<br><br>
+        Spec:<br>
+        - คำถามสะกดคำภาษาไทย 5 ข้อ<br>
+        - แสดงตัวเลือก 4 ตัว สุ่มตำแหน่ง<br>
+        - นับคะแนน + แสดง Progress bar<br>
+        - เสียง feedback ด้วย Web Audio API (ถูก=เสียงสูง, ผิด=เสียงต่ำ)<br>
+        - Responsive ใช้ได้บนมือถือ<br>
+        - สีหลัก: น้ำเงิน #1e40af"
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon icon-amber">📧</div>
+        <h3>เขียนเอกสารราชการ</h3>
+      </div>
+      <div class="practice-prompt">
+        <span class="hi">Prompt:</span><br>
+        "ร่างหนังสือราชการภายนอก จาก: ผู้อำนวยการโรงเรียนบ้านคำไผ่ ถึง: สพป.อุดรธานี เขต 1<br><br>
+        เรื่อง: ขอรับการสนับสนุนงบประมาณซ่อมแซมห้องสมุด<br>
+        รายละเอียด: ห้องสมุดชำรุด หลังคารั่ว ต้องการงบ 150,000 บาท<br><br>
+        ใช้รูปแบบหนังสือราชการไทยมาตรฐาน ภาษาทางการ"
+      </div>
+    </div>
+  </div>
+
+  <!-- PRACTICE -->
+  <div class="section" id="practice">
+    <div class="section-title">ฝึกปฏิบัติ</div>
+    <div class="section-sub">ทดสอบความเข้าใจ Prompt Engineering</div>
+
+    <div class="card" id="q1-card">
+      <div class="card-header">
+        <div class="icon icon-blue">❓</div>
+        <h3>ข้อ 1: Prompt ไหนดีกว่ากัน?</h3>
+      </div>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">ต้องการให้ AI ช่วยสร้างบทเรียนภาษาไทย</p>
+      <button class="quiz-btn" onclick="answer('q1','a','b',event)">A: "ช่วยสอนภาษาไทยหน่อย"</button>
+      <button class="quiz-btn" onclick="answer('q1','b','b',event)">B: "สร้างบทเรียนอ่านคำ ป.1 จำนวน 10 คำ พร้อมประโยคตัวอย่าง 1 ประโยคต่อคำ"</button>
+      <div class="feedback" id="q1-feedback"></div>
+    </div>
+
+    <div class="card" id="q2-card">
+      <div class="card-header">
+        <div class="icon icon-purple">❓</div>
+        <h3>ข้อ 2: ส่วนไหนในสูตร RCTF ที่ขาดไป?</h3>
+      </div>
+      <div class="practice-prompt">"เขียนแผนการสอน 50 นาที วิชาคณิตศาสตร์ ป.3 เรื่องการบวกลบ"</div>
+      <button class="quiz-btn" onclick="answer('q2','role','role',event)">Role (บทบาท AI)</button>
+      <button class="quiz-btn" onclick="answer('q2','format','role',event)">Format (รูปแบบ)</button>
+      <button class="quiz-btn" onclick="answer('q2','context','role',event)">Context (บริบท)</button>
+      <div class="feedback" id="q2-feedback"></div>
+    </div>
+
+    <div class="card" id="q3-card">
+      <div class="card-header">
+        <div class="icon icon-green">❓</div>
+        <h3>ข้อ 3: เทคนิคไหนที่ใช้อยู่?</h3>
+      </div>
+      <div class="practice-prompt">"ตาราง 1: ชื่อ=มานะ, วิชาโปรด=ภาษาไทย<br>ตาราง 2: ชื่อ=สมใจ, วิชาโปรด=คณิตศาสตร์<br>ตาราง 3: ชื่อ=วิไล, วิชาโปรด=???"</div>
+      <button class="quiz-btn" onclick="answer('q3','cot','few',event)">Chain-of-Thought</button>
+      <button class="quiz-btn" onclick="answer('q3','few','few',event)">Few-Shot Prompting</button>
+      <button class="quiz-btn" onclick="answer('q3','role','few',event)">Role Prompting</button>
+      <button class="quiz-btn" onclick="answer('q3','neg','few',event)">Negative Prompting</button>
+      <div class="feedback" id="q3-feedback"></div>
+    </div>
+
+    <div class="card" id="mood-card">
+      <div class="card-header">
+        <div class="icon icon-amber">🚀</div>
+        <h3>ความรู้สึกตอนนี้?</h3>
+      </div>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">หลังเรียนเรื่องนี้แล้ว คุณรู้สึกอย่างไร?</p>
+      <button class="quiz-btn" onclick="mood(this)">😊 พร้อมทดลองแล้ว!</button>
+      <button class="quiz-btn" onclick="mood(this)">🤔 ยังต้องศึกษาเพิ่ม</button>
+      <button class="quiz-btn" onclick="mood(this)">🔥 อยากสร้างอะไรเลย!</button>
+      <div class="feedback" id="mood-feedback"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+
+function answer(qid, chosen, correct, e) {
+  const fb = document.getElementById(qid + '-feedback');
+  const btns = document.querySelectorAll(`#${qid}-card .quiz-btn`);
+  btns.forEach(b => b.disabled = true);
+
+  if (chosen === correct) {
+    e.target.classList.add('correct');
+    const msgs = {
+      q1: '✅ ถูกต้อง! Prompt B ระบุประเภท ระดับชั้น จำนวน และรูปแบบ ครบถ้วน',
+      q2: '✅ ถูกต้อง! ขาด Role — ควรบอกว่า "คุณคือครูคณิตศาสตร์" เพื่อให้ AI ตอบในมุมมองครู',
+      q3: '✅ ถูกต้อง! นี่คือ Few-Shot — ให้ตัวอย่างรูปแบบก่อน แล้วให้ AI ทำต่อ'
+    };
+    fb.textContent = msgs[qid];
+    fb.className = 'feedback ok';
+  } else {
+    e.target.classList.add('wrong');
+    const hints = {
+      q1: '❌ ลองคิดดูว่า Prompt ไหนมีรายละเอียดครบกว่า',
+      q2: '❌ Prompt นี้มีบริบทและงาน แต่ขาดบทบาทของ AI',
+      q3: '❌ สังเกตว่า Prompt ใช้ตัวอย่าง 2 ตัวก่อน แล้วให้ทำต่อ นี่คือเทคนิคใด?'
+    };
+    fb.textContent = hints[qid];
+    fb.className = 'feedback err';
+  }
+}
+
+function mood(btn) {
+  const fb = document.getElementById('mood-feedback');
+  const t = btn.textContent;
+  document.querySelectorAll('#mood-card .quiz-btn').forEach(b => b.disabled = true);
+  btn.classList.add('correct');
+  if (t.includes('พร้อม')) fb.textContent = '🎉 เยี่ยม! เริ่มทดลองกับงานจริงได้เลย';
+  else if (t.includes('ยัง')) fb.textContent = '📖 ปกติมาก! ลองกลับไปอ่านส่วน "เทคนิคขั้นสูง" อีกรอบ';
+  else fb.textContent = '🔥 ไปเลย! Claude พร้อมช่วยทุกอย่าง';
+  fb.className = 'feedback ok';
+}
+</script>
+</body>
+</html>
