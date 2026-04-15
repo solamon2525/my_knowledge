@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Repo Tracker — บ้านคำไผ่</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/repo-tracker.css" />
+</head>
+<body>
+<!-- BACK BAR -->
+<div class="back-bar">
+    <a href="index.html" class="back-btn">← กลับหน้าหลัก</a>
+</div>
+<div class="page">
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <h1>🗂 GitHub Repo Tracker</h1>
+      <div class="hdr-sub">คลัง repo คัดสรรสำหรับงาน AI · เกมการศึกษา · Firebase · โรงเรียนบ้านคำไผ่</div>
+    </div>
+    <div class="size-ctrl">
+      <span>ขนาดตัวอักษร</span>
+      <button class="sz-btn" onclick="changeSize(-1)" title="เล็กลง">−</button>
+      <span class="sz-val" id="sz-label">ปกติ</span>
+      <button class="sz-btn" onclick="changeSize(1)" title="ใหญ่ขึ้น">+</button>
+    </div>
+  </div>
+  <div class="hdr-stats">
+    <div class="sp">รวม <b id="s-total">0</b> repos</div>
+    <div class="sp">⭐ <b id="s-stars">0</b> stars</div>
+    <div class="sp">🔥 แนะนำ <b id="s-hot">0</b> ตัว</div>
+    <div class="sp">✅ ใช้งานอยู่ <b id="s-active">0</b> ตัว</div>
+    <div class="sp">อัปเดต <b id="s-date">—</b></div>
+    <div class="font-switcher">
+      <button class="fs-btn" id="fsz-sm" onclick="setFontSize('sm')" title="ตัวเล็ก" style="font-size:12px">A</button>
+      <button class="fs-btn on" id="fsz-md" onclick="setFontSize('md')" title="ตัวปกติ" style="font-size:14px">A</button>
+      <button class="fs-btn" id="fsz-lg" onclick="setFontSize('lg')" title="ตัวใหญ่" style="font-size:17px">A</button>
+      <button class="fs-btn" id="fsz-xl" onclick="setFontSize('xl')" title="ตัวใหญ่มาก" style="font-size:20px">A</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn on" onclick="showTab('list',this)">📋 รายการ</button>
+  <button class="tab-btn" onclick="showTab('dash',this)">📊 Dashboard</button>
+  <button class="tab-btn" onclick="showTab('map',this)">🔗 แผนที่</button>
+  <button class="tab-btn" onclick="showTab('tags',this)">🎯 Use Cases</button>
+  <button class="tab-btn" onclick="showTab('lb',this)">🏆 Leaderboard</button>
+  <button class="tab-btn" onclick="showTab('prog',this)">📈 Progress</button>
+</div>
+
+<!-- ── TAB: DASHBOARD ── -->
+<div class="tab-pane" id="tab-dash">
+  <div class="dash-grid">
+    <div class="dash-card" id="d-cat">
+      <div class="dash-title">จำนวน repo ตามหมวด</div>
+      <div id="cat-bars"></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-title">สถานะการใช้งาน</div>
+      <div class="status-grid" id="status-grid"></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-title">Top 5 คะแนนประโยชน์</div>
+      <div id="top5"></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-title">คะแนนเฉลี่ยตามหมวด</div>
+      <div id="avg-bars"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── TAB: MAP ── -->
+<div class="tab-pane" id="tab-map">
+  <div class="map-wrap">
+    <div class="map-legend" id="map-legend"></div>
+    <svg class="graph" viewBox="0 0 700 490" id="graph-svg" width="100%"></svg>
+    <div class="map-info" id="map-info"><span style="color:var(--hint)">คลิกที่ node เพื่อดูข้อมูล และ highlight ความสัมพันธ์</span></div>
+    <div class="map-hint">วงกลมใหญ่ = 🔥 แนะนำสำหรับคุณ &nbsp;·&nbsp; เส้นเชื่อม = ใช้งานร่วมกัน / พึ่งพากัน</div>
+  </div>
+</div>
+<!-- ── TAB: USE CASE TAGS ── -->
+<div class="tab-pane" id="tab-tags">
+  <div style="margin-bottom:1rem">
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px">เลือก Use Case เพื่อดู repo ที่เกี่ยวข้อง</div>
+    <div class="tag-cloud" id="uc-cloud"></div>
+  </div>
+  <div class="cl" id="tag-list"></div>
+</div>
+
+<!-- ── TAB: LEADERBOARD ── -->
+<div class="tab-pane" id="tab-lb">
+  <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1rem">
+    <div style="padding:1rem 1.4rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:14px;font-weight:600;color:var(--text)">🏆 Top 10 ประโยชน์สูงสุด</div>
+      <select id="lb-sort" onchange="renderLB()" style="font-size:13px;padding:4px 10px;border-radius:8px;border:0.5px solid var(--border);background:var(--bg2);color:var(--text);font-family:'Sarabun',sans-serif">
+        <option value="utility">ประโยชน์</option>
+        <option value="activity">Active</option>
+        <option value="docs">Docs</option>
+        <option value="beginner">ง่ายต่อใช้</option>
+        <option value="avg">เฉลี่ยทุกด้าน</option>
+      </select>
+    </div>
+    <div id="lb-list"></div>
+  </div>
+</div>
+
+<!-- ── TAB: PROGRESS ── -->
+<div class="tab-pane" id="tab-prog">
+  <div class="prog-grid">
+    <div class="prog-card">
+      <div class="prog-num" id="pg-total" style="color:var(--blue)">0</div>
+      <div class="prog-lbl">repos ทั้งหมด</div>
+      <div class="prog-sub" id="pg-new-week">+0 สัปดาห์นี้</div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-num" id="pg-active" style="color:var(--green)">0</div>
+      <div class="prog-lbl">ใช้งานอยู่</div>
+      <div class="prog-sub" id="pg-pct">0% ของทั้งหมด</div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-num" id="pg-pinned" style="color:var(--gold)">0</div>
+      <div class="prog-lbl">ที่ Pin ไว้</div>
+      <div class="prog-sub">สำคัญสูง</div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-num" id="pg-todo" style="color:var(--hi)">0</div>
+      <div class="prog-lbl">To-Do ที่รอ</div>
+      <div class="prog-sub" id="pg-done-todo">0 ทำแล้ว</div>
+    </div>
+  </div>
+  <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1rem">
+    <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px">เพิ่ม repos รายวัน (7 วันล่าสุด)</div>
+    <div class="prog-week" id="pg-chart"></div>
+  </div>
+  <div class="activity-log">
+    <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px">📜 Activity Log</div>
+    <div id="pg-log"></div>
+  </div>
+</div>
+<!-- ── TAB: LIST ── -->
+<div class="tab-pane on" id="tab-list">
+  <div class="toolbar">
+    <div class="sw"><span class="si">🔍</span>
+      <input type="text" id="q" placeholder="ค้นหา repo, ภาษา, หมวด, คำอธิบาย..." oninput="render()">
+    </div>
+    <div class="fw" id="filters"><button class="fb on" onclick="setF('all',this)">ทั้งหมด</button></div>
+  </div>
+  <div class="fw" style="margin-bottom:.75rem;gap:8px">
+    <select class="ss" id="sort" onchange="render()">
+      <option value="default">เรียงตาม: ลำดับที่เพิ่ม</option>
+      <option value="hot">🔥 แนะนำก่อน</option>
+      <option value="stars">⭐ Stars มากสุด</option>
+      <option value="utility">🔧 ประโยชน์สูงสุด</option>
+      <option value="newest">📅 เพิ่มล่าสุด</option>
+    </select>
+    <label style="font-size:14px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer">
+      <input type="checkbox" id="only-hot" onchange="render()" style="width:16px;height:16px;accent-color:var(--hi)">
+      🔥 แนะนำสำหรับคุณ
+    </label>
+    <span class="rc" id="rcount"></span>
+  </div>
+  <div class="status-filter">
+    <span style="font-size:14px;color:var(--muted);align-self:center">สถานะ:</span>
+    <button class="sfp on" data-s="all" onclick="setSF('all',this)">ทั้งหมด</button>
+    <button class="sfp" data-s="active" onclick="setSF('active',this)">✅ ใช้งานอยู่</button>
+    <button class="sfp" data-s="testing" onclick="setSF('testing',this)">🔬 กำลังทดสอบ</button>
+    <button class="sfp" data-s="new" onclick="setSF('new',this)">🆕 ยังไม่ได้ลอง</button>
+    <button class="sfp" data-s="skip" onclick="setSF('skip',this)">⏭ ไม่เหมาะ</button>
+  </div>
+  <div class="tag-cloud" id="tag-filter" style="margin-bottom:.75rem"></div>
+<div class="cl" id="list"></div>
+</div>
+
+<!-- ADD FORM -->
+<div class="as">
+  <div class="ah">➕ เพิ่ม Repo ใหม่</div>
+  <div class="fg">
+    <div><div class="fl">Owner/Name *</div><input class="fi" id="f-repo" placeholder="google/langextract"></div>
+    <div><div class="fl">Emoji</div><input class="fi" id="f-emoji" placeholder="🔮" maxlength="4"></div>
+  </div>
+  <div class="fg">
+    <div><div class="fl">ภาษา</div><input class="fi" id="f-lang" placeholder="Python"></div>
+    <div><div class="fl">หมวด *</div><input class="fi" id="f-cat" placeholder="Claude Code / Firebase / Game Dev / LLM"></div>
+  </div>
+  <div class="fg">
+    <div><div class="fl">Stars</div><input class="fi" id="f-stars" placeholder="31.3k"></div>
+    <div><div class="fl">Status</div>
+      <select class="fsel" id="f-status">
+        <option value="new">🆕 ยังไม่ได้ลอง</option>
+        <option value="testing">🔬 กำลังทดสอบ</option>
+        <option value="active">✅ ใช้งานอยู่</option>
+        <option value="skip">⏭ ไม่เหมาะ</option>
+      </select>
+    </div>
+  </div>
+  <div class="fg">
+    <div><div class="fl">Badge 1 (สี:ข้อความ)</div><input class="fi" id="f-b1" placeholder="b-blue:MCP"></div>
+    <div><div class="fl">Badge 2</div><input class="fi" id="f-b2" placeholder="b-green:New"></div>
+  </div>
+  <div class="fg one"><div class="fl">คำอธิบาย *</div><textarea class="fta" id="f-desc" placeholder="อธิบาย repo นี้ทำอะไร..."></textarea></div>
+  <div class="fg">
+    <div><div class="fl">ประโยชน์ (0–100)</div><input class="fi" id="f-u" type="number" min="0" max="100"></div>
+    <div><div class="fl">Active (0–100)</div><input class="fi" id="f-a" type="number" min="0" max="100"></div>
+  </div>
+  <div class="fg">
+    <div><div class="fl">Docs (0–100)</div><input class="fi" id="f-d" type="number" min="0" max="100"></div>
+    <div><div class="fl">ง่ายต่อใช้ (0–100)</div><input class="fi" id="f-be" type="number" min="0" max="100"></div>
+  </div>
+  <div class="fg one"><div class="fl">Verdict ความเห็น</div><textarea class="fta" id="f-v" placeholder="เหมาะกับงานนี้เพราะ..."></textarea></div>
+  <div class="fg one"><div class="fl">⚡ Install Command</div><input class="fi fmono" id="f-install" placeholder="npx skills add owner/repo  หรือ  claude mcp add ..."></div>
+  <div class="fg one"><div class="fl">URL</div><input class="fi" id="f-url" placeholder="https://github.com/owner/repo"></div>
+  <div class="fg one"><div class="fl">🎯 Use Case Tags (คั่นด้วยจุลภาค)</div><input class="fi" id="f-tags" placeholder="เกม MediaPipe, Firebase, AI Pipeline, School Admin"></div>
+  <div class="fg one">
+    <div><div class="fl">🔥 แนะนำสำหรับคุณ?</div>
+      <select class="fsel" id="f-hot"><option value="0">ไม่ได้แนะนำพิเศษ</option><option value="1">🔥 แนะนำสำหรับคุณ</option></select>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+    <button class="bp" onclick="addRepo()">เพิ่ม Repo</button>
+    <button class="bs2" onclick="exportJSON()">⬇ JSON</button>
+    <button class="bs2" onclick="exportMD()">⬇ Markdown</button>
+    <button class="bs2" onclick="resetData()">↺ รีเซ็ต</button>
+  </div>
+  <div class="msg" id="msg"></div>
+</div>
+</div>
+
+<script src="data/repos_db.js"></script>
+<script>
+
+
+
+
+let _stored=JSON.parse(localStorage.getItem('rtracker4')||'null');
+let DB;
+if(_stored){
+  // merge: keep existing data, add any new repos from DEF that are missing
+  const existingIds=new Set(_stored.map(r=>r.id));
+  const newEntries=DEF.filter(r=>!existingIds.has(r.id));
+  DB=[..._stored,...newEntries];
+  if(newEntries.length){localStorage.setItem('rtracker4',JSON.stringify(DB));}
+} else {
+  DB=JSON.parse(JSON.stringify(DEF));
+}
+DB.forEach(r=>{if(!r.tags)r.tags=[];if(!r.pinned)r.pinned=false;if(!r.todos)r.todos=[];if(!r.rating)r.rating=0;if(!r.aiSummary)r.aiSummary='';if(r.detail===undefined){const def=DEF.find(d=>d.id===r.id);r.detail=def?def.detail||{}:{};}});
+let opened=null,fcat='all',fstatus='all',ftag='all';
+function save(){localStorage.setItem('rtracker4',JSON.stringify(DB));}
+function sc(v){return v>=85?'var(--green)':v>=65?'var(--blue)':'var(--amber)';}
+ 
+// ── TABS ──
+function showTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='dash')renderDash();
+  if(id==='map'){renderMap();}
+  if(id==='tags'){renderTagTab();}
+  if(id==='lb'){renderLB();}
+  if(id==='prog'){renderProg();}
+}
+ 
+// ── DASHBOARD ──
+function renderDash(){
+  const cats=[...new Set(DB.map(r=>r.cat))];
+  const catCounts={};
+  cats.forEach(c=>{catCounts[c]=DB.filter(r=>r.cat===c).length;});
+  const maxC=Math.max(...Object.values(catCounts));
+  document.getElementById('cat-bars').innerHTML=Object.entries(catCounts)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([c,n],i)=>`
+      <div class="bar-row">
+        <div class="bar-lbl" title="${c}">${c}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxC*100)}%;background:${CAT_COLORS[i%CAT_COLORS.length]}"></div></div>
+        <div class="bar-num">${n}</div>
+      </div>`).join('');
+ 
+  const sc_cnt={new:0,testing:0,active:0,skip:0};
+  DB.forEach(r=>sc_cnt[r.status||'new']++);
+  document.getElementById('status-grid').innerHTML=
+    `<div class="sstat"><div class="sstat-n" style="color:var(--blue)">${sc_cnt.new}</div><div class="sstat-l">🆕 ยังไม่ได้ลอง</div></div>
+     <div class="sstat"><div class="sstat-n" style="color:var(--amber)">${sc_cnt.testing}</div><div class="sstat-l">🔬 กำลังทดสอบ</div></div>
+     <div class="sstat"><div class="sstat-n" style="color:var(--green)">${sc_cnt.active}</div><div class="sstat-l">✅ ใช้งานอยู่</div></div>
+     <div class="sstat"><div class="sstat-n" style="color:var(--gray)">${sc_cnt.skip}</div><div class="sstat-l">⏭ ไม่เหมาะ</div></div>`;
+ 
+  const top5=[...DB].sort((a,b)=>b.scores.utility-a.scores.utility).slice(0,5);
+  document.getElementById('top5').innerHTML=top5.map((r,i)=>`
+    <div class="top5-row">
+      <div class="top5-rank">${i+1}</div>
+      <div class="top5-name">${r.owner}/${r.name}</div>
+      <div class="top5-score">${r.scores.utility}</div>
+    </div>`).join('');
+ 
+  const avgByCat={};
+  cats.forEach(c=>{
+    const rs=DB.filter(r=>r.cat===c);
+    avgByCat[c]=Math.round(rs.reduce((s,r)=>s+r.scores.utility,0)/rs.length);
+  });
+  const maxA=Math.max(...Object.values(avgByCat));
+  const aiCount=DB.filter(r=>r.aiSummary&&r.aiSummary.trim()).length;
+  const aiEl=document.getElementById('ai-summary-count');
+  if(aiEl)aiEl.textContent=`มีข้อมูล AI สรุปแล้ว ${aiCount} จาก ${DB.length} repos`;
+  document.getElementById('avg-bars').innerHTML=Object.entries(avgByCat)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([c,n],i)=>`
+      <div class="bar-row">
+        <div class="bar-lbl" title="${c}">${c}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxA*100)}%;background:${CAT_COLORS[i%CAT_COLORS.length]}"></div></div>
+        <div class="bar-num">${n}</div>
+      </div>`).join('');
+}
+ 
+// ── STATUS CYCLE ──
+let openMenu=null;
+function cycleStatus(id,e){
+  e.stopPropagation();
+  if(openMenu&&openMenu!==id){document.getElementById('sm-'+openMenu).classList.remove('show');}
+  const m=document.getElementById('sm-'+id);
+  if(m){m.classList.toggle('show');openMenu=m.classList.contains('show')?id:null;}
+}
+function setStatus(id,s,e){
+  e.stopPropagation();
+  const r=DB.find(r=>r.id===id);
+  if(r){r.status=s;save();}
+  if(openMenu){document.getElementById('sm-'+openMenu).classList.remove('show');openMenu=null;}
+  render();
+}
+document.addEventListener('click',()=>{
+  if(openMenu){document.getElementById('sm-'+openMenu).classList.remove('show');openMenu=null;}
+});
+ 
+// ── FILTERS ──
+function buildF(){
+  const cats=['all',...new Set(DB.map(r=>r.cat).sort())];
+  document.getElementById('filters').innerHTML=cats.map(c=>
+    `<button class="fb${c===fcat?' on':''}" onclick="setF('${c}',this)">${c==='all'?'ทั้งหมด':c}</button>`
+  ).join('');
+}
+function setF(cat,btn){fcat=cat;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
+function setSF(s,btn){fstatus=s;document.querySelectorAll('.sfp').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
+ 
+// ── COPY ──
+function copyText(id,text){
+  navigator.clipboard.writeText(text).catch(()=>{});
+  const btn=document.getElementById(id);
+  if(btn){btn.textContent='✓ คัดลอกแล้ว';btn.classList.add('copied');setTimeout(()=>{btn.textContent='📋 คัดลอก';btn.classList.remove('copied');},2000);}
+}
+ 
+// ── DETAIL TABS ──
+function showDT(rid,tab){
+  ['info','review','install','snippet','note','todo','ai'].forEach(t=>{
+    const p=document.getElementById('dp-'+rid+'-'+t);
+    const b=document.getElementById('db-'+rid+'-'+t);
+    if(p)p.classList.toggle('on',t===tab);
+    if(b)b.classList.toggle('on',t===tab);
+  });
+}
+ 
+// ── RENDER ──
+function render(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const srt=document.getElementById('sort').value;
+  const oh=document.getElementById('only-hot').checked;
+  let data=DB.filter(r=>{
+    if(oh&&!r.hot)return false;
+    if(fcat!=='all'&&r.cat!==fcat)return false;
+    if(fstatus!=='all'&&(r.status||'new')!==fstatus)return false;
+    if(ftag!=='all'&&!(r.tags||[]).includes(ftag))return false;
+    if(q)return[r.owner,r.name,r.cat,r.lang,r.desc,r.verdict||''].join(' ').toLowerCase().includes(q);
+    return true;
+  });
+  if(srt==='hot')data.sort((a,b)=>b.hot-a.hot||b.scores.utility-a.scores.utility);
+  if(srt==='stars')data.sort((a,b)=>b.starsN-a.starsN);
+  if(srt==='utility')data.sort((a,b)=>b.scores.utility-a.scores.utility);
+  if(srt==='newest')data.sort((a,b)=>b.added.localeCompare(a.added));
+  // pinned always float to top
+  data.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+ 
+  document.getElementById('rcount').textContent=data.length+' repos';
+  document.getElementById('s-total').textContent=DB.length;
+  document.getElementById('s-stars').textContent=(DB.reduce((s,r)=>s+r.starsN,0)/1000).toFixed(0)+'k';
+  document.getElementById('s-hot').textContent=DB.filter(r=>r.hot).length;
+  document.getElementById('s-active').textContent=DB.filter(r=>r.status==='active').length;
+  document.getElementById('s-date').textContent=DB.map(r=>r.added).sort().reverse()[0]||'—';
+  buildF();buildTagFilter();
+ 
+  const lb={utility:'ประโยชน์',activity:'Active',docs:'Docs',beginner:'ง่ายต่อใช้'};
+  document.getElementById('list').innerHTML=data.length?data.map((r,i)=>{
+    const isO=opened===r.id;
+    const[bc1,bt1]=r.b1.split(':');const[bc2,bt2]=r.b2.split(':');
+    const st=r.status||'new';
+    const sm=ST_META[st];
+    const installLines=(r.install||'').trim();
+    const hasInstall=installLines.length>0;
+    const hasSnip=(r.snippet||'').trim().length>0;
+    return`<div class="card${isO?' open':''}${r.hot?' hot':''}" id="c${r.id}" onclick="tog(${r.id})">
+      <div class="cr">
+        <div class="cn" style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <span style="font-size:13px;color:var(--hint);font-family:'JetBrains Mono',monospace">${String(i+1).padStart(2,'0')}</span>
+          <button class="pin-btn${r.pinned?' on':''}" onclick="event.stopPropagation();pinToggle(${r.id})" title="${r.pinned?'ถอน Pin':'Pin repo นี้'}">${r.pinned?'📌':'📍'}</button>
+        </div>
+        <div class="ci">${r.emoji}</div>
+        <div class="cb">
+          <div class="ct"><span class="co">${r.owner}/</span><span class="cname">${r.name}</span><span class="clang">${r.lang} · ${r.cat}</span></div>
+          <div class="bg-row">
+            <span class="badge ${bc1}">${bt1}</span>
+            <span class="badge ${bc2}">${bt2}</span>
+            <div class="status-cycle" onclick="cycleStatus(${r.id},event)">
+              <span class="status-tag ${sm.cls}">${sm.label}</span>
+              <div class="status-menu" id="sm-${r.id}">
+                ${Object.entries(ST_META).map(([k,v])=>`<div class="sm-item" onclick="setStatus(${r.id},'${k}',event)">${v.label}</div>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="cdesc">${r.desc}</div>
+          ${(r.tags||[]).length?`<div class="repo-tags">${(r.tags||[]).map(t=>`<span class="tag-chip sm">#${t}</span>`).join('')}</div>`:''}
+        </div>
+        <div class="cright">
+          <div class="sv">★ ${r.stars}</div>
+          ${r.today?`<div class="tv">${r.today} วันนี้</div>`:''}
+          <div class="dv">${r.added}</div>
+        </div>
+      </div>
+      ${isO?`<div class="det">
+        <div class="det-tabs">
+          <button class="dt-btn" id="db-${r.id}-info" onclick="event.stopPropagation();showDT(${r.id},'info')">📖 รายละเอียด</button>
+          <button class="dt-btn on" id="db-${r.id}-review" onclick="event.stopPropagation();showDT(${r.id},'review')">📊 รีวิว</button>
+          <button class="dt-btn" id="db-${r.id}-install" onclick="event.stopPropagation();showDT(${r.id},'install')">⚡ ติดตั้ง${hasInstall?' ✓':''}</button>
+          <button class="dt-btn" id="db-${r.id}-snippet" onclick="event.stopPropagation();showDT(${r.id},'snippet')">📝 Snippet${hasSnip?' ✓':''}</button>
+          <button class="dt-btn" id="db-${r.id}-note" onclick="event.stopPropagation();showDT(${r.id},'note')">🗒 บันทึก</button>
+          <button class="dt-btn" id="db-${r.id}-todo" onclick="event.stopPropagation();showDT(${r.id},'todo')">📋 To-Do${r.todos&&r.todos.length?' ('+r.todos.length+')':''}</button>
+          <button class="dt-btn" id="db-${r.id}-ai" onclick="event.stopPropagation();showDT(${r.id},'ai')">🤖 AI สรุป</button>
+        </div>
+        <div class="dt-pane" id="dp-${r.id}-info">
+          ${(()=>{
+            const d=r.detail||{};
+            if(!d.usage&&!d.prompts){
+              return '<div class="no-detail">ยังไม่มีข้อมูลละเอียด — กด "🤖 AI สรุป" แล้วบันทึกผลมาวางที่นี่ได้</div>';
+            }
+            let html='';
+            if(d.meta){
+              html+=`<div class="meta-row">
+                ${d.meta.price?`<span class="meta-pill">💰 <b>${d.meta.price}</b></span>`:''}
+                ${d.meta.time?`<span class="meta-pill">⏱ ติดตั้ง <b>${d.meta.time}</b></span>`:''}
+                ${d.meta.os?`<span class="meta-pill">💻 <b>${d.meta.os}</b></span>`:''}
+                ${d.meta.offline?`<span class="meta-pill">${d.meta.offline==='ได้'?'✅':'🌐'} <b>ออฟไลน์ ${d.meta.offline}</b></span>`:''}
+              </div>`;
+            }
+            if(d.usage&&d.usage.length){
+              html+='<div class="info-section"><div class="info-head">🎯 ใช้ทำอะไรได้บ้าง</div><div>';
+              html+=d.usage.map(u=>`<div class="use-item"><div class="use-icon">•</div><div class="use-txt">${u}</div></div>`).join('');
+              html+='</div></div>';
+            }
+            if(d.prereq){
+              html+=`<div class="info-section"><div class="info-head">✅ ต้องมีอะไรก่อน</div><div class="info-body">${d.prereq}</div></div>`;
+            }
+            if(d.prompts&&d.prompts.length){
+              html+='<div class="info-section"><div class="info-head">💬 ตัวอย่างคำสั่งที่บอก Claude ได้เลย</div><div>';
+              html+=d.prompts.map(p=>`<div class="prompt-item" onclick="navigator.clipboard.writeText('${p.replace(/'/g,"\'")}')"><span>${p}</span><span class="prompt-copy">📋 คัดลอก</span></div>`).join('');
+              html+='</div></div>';
+            }
+            if(d.warning){
+              html+=`<div style="background:var(--abg);border:0.5px solid var(--amber);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--amber);margin-top:4px">⚠️ ${d.warning}</div>`;
+            }
+            return html;
+          })()}
+        </div>
+        <div class="dt-pane on" id="dp-${r.id}-review">
+          ${Object.entries(r.scores).map(([k,v])=>`
+            <div class="sr"><span class="sl">${lb[k]}</span>
+              <div class="st"><div class="sf" style="width:${v}%;background:${sc(v)}"></div></div>
+              <span class="sn">${v}</span></div>`).join('')}
+          <div class="verd">${r.verdict||'—'}</div>
+        </div>
+        <div class="dt-pane" id="dp-${r.id}-install">
+          ${hasInstall?`
+            <div class="fi-lbl">⚡ คำสั่งติดตั้ง</div>
+            <div class="install-box">
+              <pre class="install-cmd">${r.install}</pre>
+              <button class="copy-btn" id="cpb-${r.id}" onclick="event.stopPropagation();copyText('cpb-${r.id}','${r.install.replace(/'/g,"\\'")}')">📋 คัดลอก</button>
+            </div>`:`<div class="no-install">ไม่มีคำสั่งติดตั้ง — แก้ไขได้ที่ฟอร์มด้านล่าง</div>`}
+        </div>
+        <div class="dt-pane" id="dp-${r.id}-snippet">
+          <div class="snip-lbl">📝 Code Snippet / ตัวอย่างการใช้งาน</div>
+          <div class="snippet-area">
+            <textarea class="snip" placeholder="วาง code snippet, config, หรือตัวอย่างการใช้งานที่นี่..." onclick="event.stopPropagation()" onchange="saveSnip(${r.id},this.value)">${r.snippet||''}</textarea>
+          </div>
+          ${(r.snippet||'').trim()?`<button class="copy-btn" onclick="event.stopPropagation();copyText('cps-${r.id}','${(r.snippet||'').replace(/'/g,"\\'")}');" id="cps-${r.id}" style="margin-top:6px">📋 คัดลอก snippet</button>`:''}
+        </div>
+        <div class="dt-pane" id="dp-${r.id}-note">
+          <div class="nl">🗒 บันทึกของฉัน</div>
+          <textarea class="note" placeholder="จดบันทึก, ความคิดเห็น, สิ่งที่ต้องลอง, ปัญหาที่เจอ..." onclick="event.stopPropagation()" onchange="saveNote(${r.id},this.value)">${r.note||''}</textarea>
+        </div>
+        <div class="dt-pane" id="dp-${r.id}-todo">
+          <div class="todo-wrap">
+            <div class="todo-lbl">
+              <span>📋 To-Do List</span>
+              <span style="color:var(--hint);font-size:11px">${(r.todos||[]).filter(t=>t.done).length}/${(r.todos||[]).length} เสร็จแล้ว</span>
+            </div>
+            <div class="todo-list" id="tl-${r.id}">
+              ${(r.todos||[]).map((t,ti)=>`
+                <div class="todo-row" id="tr-${r.id}-${ti}">
+                  <input type="checkbox" class="todo-cb" ${t.done?'checked':''} onclick="event.stopPropagation();toggleTodo(${r.id},${ti})">
+                  <input type="text" class="todo-txt${t.done?' done':''}" value="${t.text}" onclick="event.stopPropagation()" onchange="editTodo(${r.id},${ti},this.value)" placeholder="รายการ...">
+                  <button class="todo-del" onclick="event.stopPropagation();delTodo(${r.id},${ti})">✕</button>
+                </div>`).join('')}
+            </div>
+            <div class="todo-add">
+              <input type="text" id="ta-${r.id}" placeholder="เพิ่มรายการใหม่..." onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation();addTodo(${r.id});}">
+              <button onclick="event.stopPropagation();addTodo(${r.id})">+ เพิ่ม</button>
+            </div>
+          </div>
+        </div>
+        <div class="dt-pane" id="dp-${r.id}-ai">
+          <div style="margin-bottom:10px">
+            <div class="nl">🤖 AI สรุป repo อัตโนมัติ</div>
+            ${r.aiSummary?`<div class="ai-result show" id="ai-res-${r.id}">${r.aiSummary}</div>`:`<div class="ai-result" id="ai-res-${r.id}"></div>`}
+            <button class="ai-btn" id="ai-btn-${r.id}" onclick="event.stopPropagation();runAI(${r.id},'${r.url.replace(/'/g,'\'')}')" style="margin-top:8px">
+              🤖 สรุปจาก README
+            </button>
+            ${r.aiSummary?`<button class="ai-btn" onclick="event.stopPropagation();clearAI(${r.id})" style="margin-top:8px;margin-left:8px;background:var(--gabg);color:var(--gray);border-color:var(--border)">↺ ล้าง</button>`:''}
+            ${r.aiSummary?`<div class="ai-export-row">
+              <button class="ai-exp-btn ai-exp-md" onclick="event.stopPropagation();exportOneAI(${r.id},'md')">⬇ Export .md</button>
+              <button class="ai-exp-btn ai-exp-txt" onclick="event.stopPropagation();exportOneAI(${r.id},'txt')">⬇ Export .txt</button>
+            </div>`:''}
+          </div>
+        </div>
+        <div class="df">
+          <a href="${r.url}" target="_blank" class="ghl" onclick="event.stopPropagation()">⬡ ${r.url.replace('https://','')}</a>
+          <button class="bdel" onclick="event.stopPropagation();del(${r.id})">ลบ</button>
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join(''):`<div class="empty">ไม่พบ repo ที่ตรงกับการค้นหา</div>`;
+}
+ 
+function tog(id){opened=opened===id?null:id;render();}
+function saveNote(id,val){const r=DB.find(r=>r.id===id);if(r){r.note=val;save();}}
+function saveSnip(id,val){const r=DB.find(r=>r.id===id);if(r){r.snippet=val;save();}}
+function del(id){if(!confirm('ลบ repo นี้?'))return;const rd=DB.find(r=>r.id===id);if(rd)logActivity('🗑','ลบ '+rd.owner+'/'+rd.name);DB=DB.filter(r=>r.id!==id);opened=null;save();render();}
+ 
+function addRepo(){
+  const repo=document.getElementById('f-repo').value.trim();
+  const desc=document.getElementById('f-desc').value.trim();
+  const cat=document.getElementById('f-cat').value.trim();
+  if(!repo||!desc||!cat){setMsg('⚠ กรุณากรอก Owner/Name, หมวด และ คำอธิบาย','var(--red)');return;}
+  const pts=repo.split('/');
+  const owner=pts[0],name=pts.slice(1).join('/')||repo;
+  const sr=document.getElementById('f-stars').value.trim()||'0';
+  const sn=parseFloat(sr.replace('k',''))*(sr.includes('k')?1000:1);
+  DB.push({id:Date.now(),emoji:document.getElementById('f-emoji').value.trim()||'📦',owner,name,cat,
+    lang:document.getElementById('f-lang').value.trim()||'—',
+    stars:sr,starsN:Math.round(sn),today:'',
+    b1:document.getElementById('f-b1').value.trim()||'b-gray:misc',
+    b2:document.getElementById('f-b2').value.trim()||'b-gray:new',
+    hot:parseInt(document.getElementById('f-hot').value)||0,
+    tags:(document.getElementById('f-tags').value||'').split(',').map(t=>t.trim()).filter(Boolean),
+    status:document.getElementById('f-status').value||'new',
+    install:document.getElementById('f-install').value.trim()||'',
+    pinned:false,todos:[],rating:0,aiSummary:'',snippet:'',desc,
+    scores:{utility:parseInt(document.getElementById('f-u').value)||0,activity:parseInt(document.getElementById('f-a').value)||0,docs:parseInt(document.getElementById('f-d').value)||0,beginner:parseInt(document.getElementById('f-be').value)||0},
+    verdict:document.getElementById('f-v').value.trim()||'—',
+    url:document.getElementById('f-url').value.trim()||`https://github.com/${repo}`,
+    added:new Date().toISOString().slice(0,10),note:''});
+  save();
+  ['f-repo','f-emoji','f-lang','f-cat','f-stars','f-b1','f-b2','f-desc','f-u','f-a','f-d','f-be','f-v','f-install','f-url','f-tags'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('f-hot').value='0';
+  document.getElementById('f-status').value='new';
+  logActivity('➕','เพิ่ม repo '+owner+'/'+name);
+  setMsg(`✓ เพิ่ม ${owner}/${name} แล้ว`,'var(--green)');
+  setTimeout(()=>document.getElementById('msg').textContent='',3000);
+  render();
+}
+ 
+function resetData(){if(!confirm('รีเซ็ตข้อมูลทั้งหมด?'))return;DB=JSON.parse(JSON.stringify(DEF));opened=null;save();render();}
+function setMsg(t,c){const e=document.getElementById('msg');e.textContent=t;e.style.color=c;}
+ 
+function exportJSON(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}));a.download=`repos-${new Date().toISOString().slice(0,10)}.json`;a.click();}
+function exportMD(){
+  const lines=['# GitHub Repo Tracker\n',`> ${new Date().toISOString().slice(0,10)} | ${DB.length} repos\n`];
+  const bc={};DB.forEach(r=>{if(!bc[r.cat])bc[r.cat]=[];bc[r.cat].push(r);});
+  for(const[cat,list]of Object.entries(bc)){
+    lines.push(`\n## ${cat}\n`);
+    list.forEach(r=>{
+      const st=ST_META[r.status||'new'];
+      lines.push(`### ${r.emoji} [${r.owner}/${r.name}](${r.url})${r.hot?' 🔥':''} ${st.label}`);
+      lines.push(`**Stars:** ${r.stars} | **Lang:** ${r.lang} | **Added:** ${r.added}\n\n${r.desc}\n\n**Verdict:** ${r.verdict||'—'}\n`);
+      if(r.install)lines.push(`\`\`\`bash\n${r.install}\n\`\`\`\n`);
+      if(r.snippet)lines.push(`\`\`\`\n${r.snippet}\n\`\`\`\n`);
+      if((r.tags||[]).length)lines.push(`**Tags:** ${r.tags.join(', ')}\n`);
+      if(r.note)lines.push(`> 📝 ${r.note}\n`);
+    });
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/markdown'}));a.download=`repos-${new Date().toISOString().slice(0,10)}.md`;a.click();
+}
+// ── PIN ──────────────────────────────────────
+function pinToggle(id){
+  const r=DB.find(r=>r.id===id);
+  if(!r)return;
+  r.pinned=!r.pinned;
+  logActivity(r.pinned?'📌':'📍', (r.pinned?'Pin':'ถอน Pin')+' '+r.owner+'/'+r.name);
+  save();render();
+}
+ 
+// ── TODO ─────────────────────────────────────
+function addTodo(rid){
+  const inp=document.getElementById('ta-'+rid);
+  if(!inp||!inp.value.trim())return;
+  const r=DB.find(r=>r.id===rid);
+  if(!r)return;
+  if(!r.todos)r.todos=[];
+  r.todos.push({text:inp.value.trim(),done:false,added:new Date().toISOString().slice(0,10)});
+  inp.value='';
+  logActivity('📋','เพิ่ม To-Do ใน '+r.owner+'/'+r.name);
+  save();render();
+}
+function toggleTodo(rid,ti){
+  const r=DB.find(r=>r.id===rid);
+  if(!r||!r.todos[ti])return;
+  r.todos[ti].done=!r.todos[ti].done;
+  if(r.todos[ti].done)logActivity('✅','ทำ To-Do เสร็จ: '+r.todos[ti].text);
+  save();render();
+}
+function editTodo(rid,ti,val){
+  const r=DB.find(r=>r.id===rid);
+  if(!r||!r.todos[ti])return;
+  r.todos[ti].text=val;
+  save();
+}
+function delTodo(rid,ti){
+  const r=DB.find(r=>r.id===rid);
+  if(!r)return;
+  r.todos.splice(ti,1);
+  save();render();
+}
+ 
+// ── ACTIVITY LOG ─────────────────────────────
+function logActivity(icon,text){
+  const logs=JSON.parse(localStorage.getItem('rt-log')||'[]');
+  logs.unshift({icon,text,time:new Date().toLocaleString('th-TH',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'})});
+  if(logs.length>50)logs.pop();
+  localStorage.setItem('rt-log',JSON.stringify(logs));
+}
+ 
+// ── LEADERBOARD ───────────────────────────────
+function renderLB(){
+  const srt=document.getElementById('lb-sort')?.value||'utility';
+  const medals=['🥇','🥈','🥉'];
+  const sorted=[...DB].sort((a,b)=>{
+    if(srt==='avg'){
+      const avgA=(a.scores.utility+a.scores.activity+a.scores.docs+a.scores.beginner)/4;
+      const avgB=(b.scores.utility+b.scores.activity+b.scores.docs+b.scores.beginner)/4;
+      return avgB-avgA;
+    }
+    return b.scores[srt]-a.scores[srt];
+  }).slice(0,10);
+  const max=sorted[0]?sorted[0].scores[srt]||1:1;
+  document.getElementById('lb-list').innerHTML=sorted.map((r,i)=>{
+    const score=srt==='avg'?Math.round((r.scores.utility+r.scores.activity+r.scores.docs+r.scores.beginner)/4):r.scores[srt];
+    const pct=Math.round(score/100*100);
+    return`<div class="lb-row">
+      <div class="lb-rank" style="color:${i===0?'var(--gold)':i===1?'var(--hint)':i===2?'var(--amber)':'var(--muted)'}">${medals[i]||String(i+1)}</div>
+      <div class="lb-emoji">${r.emoji}</div>
+      <div class="lb-info">
+        <div class="lb-name">${r.owner}/${r.name}</div>
+        <div class="lb-cat">${r.cat} · ${r.lang}</div>
+      </div>
+      <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%"></div></div>
+      <div class="lb-score" style="color:${score>=85?'var(--green)':score>=65?'var(--blue)':'var(--amber)'}">${score}</div>
+    </div>`;
+  }).join('');
+}
+ 
+// ── PROGRESS ─────────────────────────────────
+function renderProg(){
+  const now=new Date();
+  const weekAgo=new Date(now-7*864e5);
+  const newThisWeek=DB.filter(r=>new Date(r.added)>=weekAgo).length;
+  const activeCount=DB.filter(r=>r.status==='active').length;
+  const pinnedCount=DB.filter(r=>r.pinned).length;
+  const allTodos=DB.flatMap(r=>r.todos||[]);
+  const pendingTodos=allTodos.filter(t=>!t.done).length;
+  const doneTodos=allTodos.filter(t=>t.done).length;
+ 
+  document.getElementById('pg-total').textContent=DB.length;
+  document.getElementById('pg-new-week').textContent='+'+newThisWeek+' สัปดาห์นี้';
+  document.getElementById('pg-active').textContent=activeCount;
+  document.getElementById('pg-pct').textContent=Math.round(activeCount/DB.length*100)+'% ของทั้งหมด';
+  document.getElementById('pg-pinned').textContent=pinnedCount;
+  document.getElementById('pg-todo').textContent=pendingTodos;
+  document.getElementById('pg-done-todo').textContent=doneTodos+' ทำแล้ว';
+ 
+  // 7-day chart
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(now-i*864e5);
+    const ds=d.toISOString().slice(0,10);
+    const lbl=['อา','จ','อ','พ','พฤ','ศ','ส'][d.getDay()];
+    const cnt=DB.filter(r=>r.added===ds).length;
+    days.push({lbl,cnt});
+  }
+  const maxDay=Math.max(...days.map(d=>d.cnt),1);
+  document.getElementById('pg-chart').innerHTML=days.map(d=>`
+    <div class="prog-bar-col">
+      <div style="font-size:10px;color:var(--hint);margin-bottom:2px">${d.cnt||''}</div>
+      <div class="prog-b" style="height:${Math.max(d.cnt/maxDay*48,d.cnt>0?4:2)}px;background:${d.cnt>0?'var(--blue)':'var(--bg3)'}"></div>
+      <div class="prog-day">${d.lbl}</div>
+    </div>`).join('');
+ 
+  // activity log
+  const logs=JSON.parse(localStorage.getItem('rt-log')||'[]');
+  const el=document.getElementById('pg-log');
+  if(!logs.length){el.innerHTML='<div style="font-size:13px;color:var(--hint);padding:8px 0">ยังไม่มี activity — ลอง Pin หรือเพิ่ม To-Do</div>';return;}
+  el.innerHTML=logs.slice(0,12).map(l=>`
+    <div class="act-row">
+      <div class="act-icon">${l.icon}</div>
+      <div class="act-text">${l.text}</div>
+      <div class="act-time">${l.time}</div>
+    </div>`).join('');
+}
+ 
+// ── AI SUMMARY ────────────────────────────────
+async function runAI(id,url){
+  const btn=document.getElementById('ai-btn-'+id);
+  const res=document.getElementById('ai-res-'+id);
+  const r=DB.find(r=>r.id===id);
+  if(!r||!btn||!res)return;
+  btn.disabled=true;
+  btn.textContent='⏳ กำลังสรุป...';
+  res.classList.add('show');
+  res.textContent='🤖 กำลังวิเคราะห์ repo...';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:`สรุป repo นี้ให้กระชับเป็นภาษาไทย โดยครอบคลุม:
+1. ทำอะไรได้บ้าง (2-3 ประโยค)
+2. เหมาะกับงานครูและเกมการศึกษาไหม อย่างไร
+3. ข้อดี/ข้อเสีย หลักๆ
+4. คะแนนแนะนำ (utility, ease, activity) 0-100
+ 
+repo: ${r.owner}/${r.name}
+URL: ${url}
+คำอธิบายปัจจุบัน: ${r.desc}
+ 
+ตอบแบบ structured ไม่ต้องมี markdown header ยาว`}]
+      })
+    });
+    const data=await resp.json();
+    const txt=data.content?.[0]?.text||'ไม่สามารถสรุปได้';
+    r.aiSummary=txt;
+    res.textContent=txt;
+    logActivity('🤖','AI สรุป '+r.owner+'/'+r.name);
+    save();
+  }catch(e){
+    res.textContent='❌ เกิดข้อผิดพลาด: '+e.message;
+  }
+  btn.disabled=false;
+  btn.textContent='🤖 สรุปใหม่';
+}
+function clearAI(id){
+  const r=DB.find(r=>r.id===id);
+  if(!r)return;
+  r.aiSummary='';
+  save();render();
+}
+ 
+// ── SIZE CONTROL ─────────────────────────────────
+const SIZES = ['xs','sm','md','lg'];
+const SIZE_LABELS = {'xs':'เล็กมาก','sm':'เล็ก','md':'ปกติ','lg':'ใหญ่'};
+let curSize = localStorage.getItem('rt-size') || 'md';
+ 
+function applySize(s){
+  const page = document.querySelector('.page');
+  if(!page) return;
+  SIZES.forEach(sz => page.classList.remove('sz-'+sz));
+  page.classList.add('sz-'+s);
+  const lbl = document.getElementById('sz-label');
+  if(lbl) lbl.textContent = SIZE_LABELS[s] || s;
+  localStorage.setItem('rt-size', s);
+  curSize = s;
+}
+function changeSize(dir){
+  const idx = SIZES.indexOf(curSize);
+  const next = Math.max(0, Math.min(SIZES.length-1, idx+dir));
+  applySize(SIZES[next]);
+}
+ 
+ 
+function setFontSize(sz){
+  const page=document.querySelector('.page');
+  ['sz-sm','sz-md','sz-lg','sz-xl'].forEach(c=>page.classList.remove(c));
+  page.classList.add('sz-'+sz);
+  ['sm','md','lg','xl'].forEach(s=>{
+    const b=document.getElementById('fsz-'+s);
+    if(b)b.classList.toggle('on',s===sz);
+  });
+  localStorage.setItem('rt-fontsize',sz);
+}
+// restore saved font size
+(function(){
+  const saved=localStorage.getItem('rt-fontsize')||'md';
+  setTimeout(()=>setFontSize(saved),0);
+})();
+ 
+// ── AI EXPORT ──────────────────────────────────────────────────────
+function exportOneAI(id,fmt){
+  const r=DB.find(r=>r.id===id);
+  if(!r||!r.aiSummary)return;
+  const name=r.owner+'-'+r.name;
+  let content;
+  if(fmt==='md'){
+    content=`# AI สรุป: ${r.emoji} ${r.owner}/${r.name}\n\n`+
+      `**หมวด:** ${r.cat} | **ภาษา:** ${r.lang} | **Stars:** ${r.stars}\n\n`+
+      `**URL:** ${r.url}\n\n`+
+      `**วันที่สรุป:** ${new Date().toLocaleDateString('th-TH')}\n\n---\n\n${r.aiSummary}`;
+  } else {
+    content=`AI สรุป: ${r.owner}/${r.name}\n`+
+      `${'='.repeat(50)}\n`+
+      `หมวด: ${r.cat} | Stars: ${r.stars}\nURL: ${r.url}\n`+
+      `วันที่สรุป: ${new Date().toLocaleDateString('th-TH')}\n${'='.repeat(50)}\n\n${r.aiSummary}`;
+  }
+  const ext=fmt==='md'?'.md':'.txt';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:'text/plain;charset=utf-8'}));
+  a.download=`ai-summary-${name}${ext}`;
+  a.click();
+}
+ 
+function exportAllAI(fmt){
+  const withAI=DB.filter(r=>r.aiSummary&&r.aiSummary.trim());
+  if(!withAI.length){alert('ยังไม่มี AI สรุป — กดปุ่ม "🤖 สรุปจาก README" ในแต่ละ repo ก่อน');return;}
+  let content;
+  const date=new Date().toLocaleDateString('th-TH');
+  if(fmt==='md'){
+    content=`# AI Summaries — GitHub Repo Tracker\n\n`+
+      `> สร้างเมื่อ: ${date} | รวม ${withAI.length} repos\n\n---\n\n`;
+    withAI.forEach(r=>{
+      content+=`## ${r.emoji} ${r.owner}/${r.name}\n\n`+
+        `**หมวด:** ${r.cat} | **Stars:** ${r.stars} | **URL:** ${r.url}\n\n`+
+        `${r.aiSummary}\n\n---\n\n`;
+    });
+  } else {
+    content=`AI SUMMARIES — GitHub Repo Tracker\n`+
+      `สร้างเมื่อ: ${date} | รวม ${withAI.length} repos\n`+
+      `${'='.repeat(60)}\n\n`;
+    withAI.forEach(r=>{
+      content+=`${r.emoji} ${r.owner}/${r.name}\n`+
+        `หมวด: ${r.cat} | Stars: ${r.stars}\n`+
+        `URL: ${r.url}\n`+
+        `${'-'.repeat(40)}\n${r.aiSummary}\n\n${'='.repeat(60)}\n\n`;
+    });
+  }
+  const ext=fmt==='md'?'.md':'.txt';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:'text/plain;charset=utf-8'}));
+  a.download=`ai-summaries-all${ext}`;
+  a.click();
+}
+ 
+function buildTagFilter(){
+  const allTags=[...new Set(DB.flatMap(r=>r.tags||[]))].sort();
+  const el=document.getElementById('tag-filter');
+  if(!el)return;
+  if(!allTags.length){el.innerHTML='';return;}
+  el.innerHTML='<span style="font-size:13px;color:var(--muted);align-self:center">Tag:</span>'
+    +['all',...allTags].map(t=>`<button class="tag-chip${t===ftag?' on':''}" onclick="setTag('${t}',this)">${t==='all'?'ทั้งหมด':'#'+t}</button>`).join('');
+}
+function setTag(t,btn){
+  ftag=t;
+  document.querySelectorAll('#tag-filter .tag-chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');render();
+}
+function renderTagTab(){
+  const cloud=document.getElementById('uc-cloud');
+  const list=document.getElementById('tag-list');
+  const allTags=[...new Set(DB.flatMap(r=>r.tags||[]))].sort();
+  let sel=null;
+  function drawCloud(){
+    if(!allTags.length){cloud.innerHTML='<span style="color:var(--hint);font-size:14px">ยังไม่มี tags — ระบุ tags ในฟอร์มด้านล่าง</span>';return;}
+    cloud.innerHTML=allTags.map(t=>{
+      const cnt=DB.filter(r=>(r.tags||[]).includes(t)).length;
+      return`<button class="tag-chip${sel===t?' on':''}" style="font-size:15px" onclick="_ucSel('${t}')">#${t} <span style="font-size:12px;opacity:.65">(${cnt})</span></button>`;
+    }).join('');
+  }
+  window._ucSel=function(tag){
+    sel=sel===tag?null:tag;drawCloud();
+    if(!sel){list.innerHTML='';return;}
+    const repos=DB.filter(r=>(r.tags||[]).includes(sel));
+    list.innerHTML=repos.map((r,i)=>{
+      const[bc1,bt1]=r.b1.split(':');
+      return`<div class="card" style="cursor:default">
+        <div class="cr">
+          <div class="cn">${String(i+1).padStart(2,'0')}</div>
+          <div class="ci">${r.emoji}</div>
+          <div class="cb">
+            <div class="ct"><span class="co">${r.owner}/</span><span class="cname">${r.name}</span><span class="clang">${r.lang} · ${r.cat}</span></div>
+            <div class="bg-row"><span class="badge ${bc1}">${bt1}</span></div>
+            <div class="cdesc">${r.desc}</div>
+            <div class="repo-tags">${(r.tags||[]).map(t=>`<span class="tag-chip sm">#${t}</span>`).join('')}</div>
+          </div>
+          <div class="cright"><div class="sv">★ ${r.stars}</div><div class="dv">${r.added}</div></div>
+        </div>
+      </div>`;
+    }).join('')||`<div class="empty">ไม่มี repo ใน tag นี้</div>`;
+  };
+  drawCloud();
+}
+ 
+// ── MAP ──
+const MAP_NODES=[
+  {id:1, x:115,y:85,  lbl:'everything-cc',cat:'Claude Code'},
+  {id:2, x:45, y:175, lbl:'gstack',cat:'Claude Code'},
+  {id:3, x:185,y:180, lbl:'claude-skills',cat:'Claude Code'},
+  {id:4, x:85, y:265, lbl:'agent-skills',cat:'Claude Code'},
+  {id:5, x:195,y:270, lbl:'design-md',cat:'Claude Code'},
+  {id:22,x:45, y:350, lbl:'Jeffallan',cat:'Claude Code'},
+  {id:23,x:175,y:355, lbl:'superpowers',cat:'Claude Code'},
+  {id:6, x:370,y:78,  lbl:'firebase-mcp',cat:'Firebase'},
+  {id:7, x:460,y:58,  lbl:'mcp/servers',cat:'Firebase'},
+  {id:8, x:355,y:198, lbl:'chrome-devtools',cat:'Game Dev'},
+  {id:9, x:270,y:288, lbl:'GitNexus',cat:'Game Dev'},
+  {id:10,x:445,y:292, lbl:'openscreen',cat:'Game Dev'},
+  {id:19,x:455,y:188, lbl:'tambo',cat:'UI'},
+  {id:21,x:455,y:118, lbl:'shannon',cat:'Security'},
+  {id:11,x:195,y:420, lbl:'langextract',cat:'LLM'},
+  {id:12,x:90, y:430, lbl:'unsloth',cat:'LLM'},
+  {id:13,x:298,y:415, lbl:'llm-apps',cat:'LLM'},
+  {id:14,x:390,y:425, lbl:'HandsOnLLM',cat:'LLM'},
+  {id:15,x:585,y:85,  lbl:'Personal-AI',cat:'AI Agent'},
+  {id:16,x:655,y:170, lbl:'goose',cat:'AI Agent'},
+  {id:17,x:575,y:195, lbl:'rowboat',cat:'AI Agent'},
+  {id:18,x:648,y:285, lbl:'gh-aw',cat:'AI Agent'},
+  {id:24,x:568,y:355, lbl:'claw-code',cat:'AI Agent'},
+  {id:25,x:645,y:390, lbl:'hermes',cat:'AI Agent'},
+  {id:20,x:530,y:435, lbl:'PowerToys',cat:'Dev Tool'},
+];
+const MAP_EDGES=[
+  [1,2],[1,3],[1,4],[1,5],[1,22],[1,23],
+  [1,6],[1,8],
+  [6,7],[6,21],[6,18],
+  [8,6],[8,19],[8,9],[8,10],
+  [4,6],[3,4],
+  [11,8],[11,13],
+  [12,25],[13,25],
+  [15,16],[15,17],[16,18],[18,24],[17,25],
+];
+const MC={'Claude Code':'#1754A8','Firebase':'#C05621','Game Dev':'#1D7D5E','LLM':'#6D3AAE','AI Agent':'#B03030','UI':'#B03585','Security':'#8B0000','Dev Tool':'#5A5852'};
+let selN=null;
+ 
+function renderMap(){
+  const svg=document.getElementById('graph-svg');
+  const legend=document.getElementById('map-legend');
+  const info=document.getElementById('map-info');
+  const cats=[...new Set(MAP_NODES.map(n=>n.cat))];
+  legend.innerHTML=cats.map(c=>`<div class="ml-item"><div class="ml-dot" style="background:${MC[c]}"></div>${c}</div>`).join('');
+ 
+  const adj={};
+  MAP_NODES.forEach(n=>{adj[n.id]=new Set();});
+  MAP_EDGES.forEach(([a,b])=>{adj[a].add(b);adj[b].add(a);});
+ 
+  window.mapHit=function(nid){
+    selN=selN===nid?null:nid;
+    const conn=selN?adj[selN]:new Set();
+    svg.querySelectorAll('.ng').forEach(g=>{
+      const id=+g.dataset.id;
+      g.classList.toggle('dim',!!selN&&id!==selN&&!conn.has(id));
+      g.classList.toggle('hi',!!selN&&(id===selN||conn.has(id)));
+    });
+    svg.querySelectorAll('.e').forEach(e=>{
+      const a=+e.dataset.a,b=+e.dataset.b;
+      const isConn=selN&&(a===selN||b===selN);
+      e.classList.toggle('hi',!!isConn);
+      e.classList.toggle('dim',!!selN&&!isConn);
+    });
+    if(selN){
+      const nd=MAP_NODES.find(n=>n.id===selN);
+      const repo=DB.find(r=>r.id===selN);
+      const connNames=[...conn].map(cid=>{const cn=MAP_NODES.find(n=>n.id===cid);return cn?'#'+cn.lbl:'';}).filter(Boolean).join(', ')||'—';
+      info.innerHTML=`<b>${repo?repo.emoji:''} ${repo?repo.owner+'/'+repo.name:nd.lbl}</b> <span style="font-size:12px;color:var(--hint)">${nd.cat}</span><br>
+        <span style="color:var(--muted);font-size:13px;line-height:1.55">${repo?repo.desc.substring(0,110)+'...':''}</span><br>
+        <span style="font-size:12px;color:var(--blue)">เชื่อมต่อกับ: ${connNames}</span>`;
+    } else {
+      info.innerHTML='<span style="color:var(--hint)">คลิกที่ node เพื่อดูข้อมูล และ highlight ความสัมพันธ์</span>';
+    }
+  };
+ 
+  const edges=MAP_EDGES.map(([a,b])=>{
+    const na=MAP_NODES.find(n=>n.id===a),nb=MAP_NODES.find(n=>n.id===b);
+    if(!na||!nb)return'';
+    const mx=(na.x+nb.x)/2,my=(na.y+nb.y)/2-22;
+    return`<path class="e" data-a="${a}" data-b="${b}" d="M${na.x},${na.y} Q${mx},${my} ${nb.x},${nb.y}"/>`;
+  }).join('');
+ 
+  const nodes=MAP_NODES.map(n=>{
+    const col=MC[n.cat]||'#888';
+    const r=DB.find(r=>r.id===n.id);
+    const hot=r&&r.hot;
+    const lbl=n.lbl.length>13?n.lbl.slice(0,12)+'…':n.lbl;
+    const radius=hot?20:15;
+    return`<g class="ng" data-id="${n.id}" onclick="mapHit(${n.id})">
+      ${hot?`<circle cx="${n.x}" cy="${n.y}" r="24" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="3 3" opacity=".45"/>`:``}
+      <circle cx="${n.x}" cy="${n.y}" r="${radius}" fill="${col}" fill-opacity=".14" stroke="${col}" stroke-width="${hot?2:1.5}"/>
+      <text x="${n.x}" y="${n.y+1}" text-anchor="middle" dominant-baseline="central" fill="${col}" font-size="9" font-weight="700" font-family="sans-serif">${r?r.emoji:''}</text>
+      <text x="${n.x}" y="${n.y+29}" text-anchor="middle" fill="var(--muted)" font-size="9.5" font-family="Sarabun,sans-serif">${lbl}</text>
+    </g>`;
+  }).join('');
+ 
+  svg.innerHTML=edges+nodes;
+}
+ 
+render();
+applySize(curSize);
+</script>
+</body>
+</html>
