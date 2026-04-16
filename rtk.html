@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTK - Rust Token Killer (ภาษาไทย)</title>
+    <style>
+        :root {
+            --color-fg-default: #1f2328;
+            --color-canvas-default: #ffffff;
+            --color-canvas-subtle: #f6f8fa;
+            --color-border-default: #d0d7de;
+            --color-border-muted: #d8dee4;
+            --color-accent-fg: #0969da;
+            --color-neutral-muted: #afb8c133;
+            --color-success-fg: #1a7f37;
+            --color-attention-fg: #9a6700;
+            --color-danger-fg: #cf222e;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+            --font-code: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            color: var(--color-fg-default);
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .markdown-body {
+            max-width: 900px;
+            width: 100%;
+            background-color: var(--color-canvas-default);
+            border: 1px solid var(--color-border-default);
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1, h2, h3, h4 { margin-top: 24px; margin-bottom: 16px; font-weight: 600; line-height: 1.25; }
+        h1 { font-size: 2.2em; border-bottom: 1px solid var(--color-border-muted); padding-bottom: .3em; text-align: center; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid var(--color-border-muted); padding-bottom: .3em; margin-top: 40px; }
+        h3 { font-size: 1.25em; margin-top: 24px; }
+        
+        p, ul, ol, table, pre, details { margin-bottom: 16px; }
+
+        a { color: var(--color-accent-fg); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        code {
+            padding: 0.2em 0.4em;
+            font-size: 85%;
+            background-color: var(--color-neutral-muted);
+            border-radius: 6px;
+            font-family: var(--font-code);
+        }
+
+        .code-container { position: relative; margin-bottom: 16px; }
+
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            background-color: var(--color-canvas-subtle);
+            border-radius: 6px;
+            border: 1px solid var(--color-border-default);
+            margin: 0;
+            line-height: 1.45;
+        }
+        pre code { background-color: transparent; padding: 0; }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 8px;
+            font-size: 12px;
+            background: #ffffff;
+            border: 1px solid var(--color-border-default);
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { opacity: 1; background: #f0f0f0; }
+
+        .table-wrapper { overflow-x: auto; margin-bottom: 24px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        table th, table td { padding: 8px 13px; border: 1px solid var(--color-border-default); text-align: left; }
+        table th { background-color: var(--color-canvas-subtle); }
+        table tr:nth-child(2n) { background-color: #fafbfc; }
+
+        .align-center { text-align: center; }
+        .text-success { color: var(--color-success-fg); font-weight: bold; }
+        
+        .header-links { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .header-links a { font-size: 14px; }
+
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+
+        /* TOC */
+        .toc {
+            background-color: var(--color-canvas-subtle);
+            border: 1px solid var(--color-border-default);
+            border-radius: 6px;
+            padding: 16px 24px;
+            margin-bottom: 32px;
+        }
+        .toc ul { list-style: none; padding-left: 0; margin-bottom: 0; }
+        .toc ul li { margin-bottom: 8px; }
+        .toc ul ul { padding-left: 20px; margin-top: 8px; }
+
+        /* Calculator & Demo Styles from previous iteration */
+        .calc-container { background-color: #ffffff; border: 1px solid var(--color-border-default); padding: 24px; border-radius: 8px; margin: 24px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .calc-input-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .calc-input-group input { width: 100%; padding: 10px; border: 1px solid var(--color-border-default); border-radius: 6px; font-size: 16px; }
+        .calc-result { background: #f4fce3; padding: 20px; border-radius: 6px; border: 1px solid #d3f9d8; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+
+        .terminal-tabs { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
+        .tab-btn { padding: 8px 16px; background: var(--color-canvas-subtle); border: 1px solid var(--color-border-default); border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 500; white-space: nowrap; }
+        .tab-btn.active { background: var(--color-fg-default); color: white; border-color: var(--color-fg-default); }
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;}
+        .terminal-window { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-family: var(--font-code); font-size: 13px; min-height: 200px; overflow-x: auto; white-space: pre; }
+        .terminal-label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 14px; }
+        .tag-cmd { color: #569cd6; font-weight: bold; }
+        .tag-success { color: #4ec9b0; }
+        .tag-error { color: #f48771; }
+
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--color-fg-default); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; display: none; z-index: 1000; }
+
+        @media (max-width: 768px) {
+            .markdown-body { padding: 20px; }
+            .calc-grid, .comparison-grid { grid-template-columns: 1fr; }
+            .terminal-window { min-height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast">✅ คัดลอกไปยังคลิปบอร์ดแล้ว!</div>
+
+    <article class="markdown-body">
+        
+        <!-- Header -->
+        <h1>RTK - Rust Token Killer</h1>
+        <p class="align-center" style="font-weight: 500;">CLI Proxy ประสิทธิภาพสูงที่ช่วยลดการบริโภค Token ของ LLM ได้ 60-90%</p>
+        
+        <div class="align-center" style="margin-bottom: 20px;">
+            <code>CI</code> <code>Release</code> <code>License: MIT</code> <code>Discord</code> <code>Homebrew</code>
+        </div>
+
+        <div class="header-links">
+            <a href="https://rtk-ai.app">เว็บไซต์</a> • 
+            <a href="#installation">การติดตั้ง</a> • 
+            <a href="#troubleshooting">การแก้ปัญหา</a> • 
+            <a href="#architecture">สถาปัตยกรรม</a> • 
+            <a href="#">Discord</a>
+        </div>
+        <div class="header-links" style="font-size: 12px;">
+            <a href="#">English</a> • <a href="#">Francais</a> • <a href="#">中文</a> • <a href="#">日本語</a> • <a href="#">한국어</a> • <a href="#">Espanol</a> • <strong>ภาษาไทย</strong>
+        </div>
+
+        <p><code>rtk</code> ทำหน้าที่กรองและบีบอัด Output ของคำสั่งต่างๆ ก่อนที่จะส่งไปถึง Context ของ LLM มาในรูปแบบไฟล์ Binary ของ Rust เพียงไฟล์เดียว รองรับคำสั่งมากกว่า 100 คำสั่ง และมี Overhead ต่ำกว่า 10ms</p>
+
+        <!-- TOC -->
+        <div class="toc">
+            <strong>สารบัญ (Table of Contents)</strong>
+            <ul>
+                <li><a href="#interactive-features">✨ ฟีเจอร์ Interactive (ใหม่)</a></li>
+                <li><a href="#token-savings">📊 การประหยัด Token (สถิติเต็มรูปแบบ)</a></li>
+                <li><a href="#installation">🚀 การติดตั้ง (ทุกวิธี)</a></li>
+                <li><a href="#quick-start">💡 เริ่มต้นใช้งานอย่างรวดเร็ว</a></li>
+                <li><a href="#how-it-works">🔍 หลักการทำงาน</a></li>
+                <li><a href="#commands">🛠 คำสั่งที่รองรับทั้งหมด</a></li>
+                <li><a href="#analytics">📈 Token Savings Analytics</a></li>
+                <li><a href="#auto-rewrite">🔄 Auto-Rewrite Hook & Windows</a></li>
+                <li><a href="#supported-tools">🤖 เครื่องมือ AI ที่รองรับ</a></li>
+                <li><a href="#configuration">⚙️ การตั้งค่า (Configuration)</a></li>
+            </ul>
+        </div>
+
+        <!-- Interactive Features -->
+        <h2 id="interactive-features">✨ ฟีเจอร์ Interactive (ประเมินความคุ้มค่า & Demo)</h2>
+        
+        <div class="calc-container">
+            <h3>💰 เครื่องคำนวณการประหยัด Token (Savings Calculator)</h3>
+            <div class="calc-grid">
+                <div class="calc-input-group">
+                    <label for="monthly-cost">ค่าใช้จ่าย API ต่อเดือน (บาท / USD)</label>
+                    <input type="number" id="monthly-cost" placeholder="เช่น 1000" oninput="calculateSavings()">
+                    <p style="font-size: 12px; color: #656d76;">* อ้างอิงจากค่าเฉลี่ยการประหยัดที่ 75% เมื่อใช้ RTK</p>
+                </div>
+                <div class="calc-result">
+                    <span style="font-size: 14px; font-weight: 600;">คุณจะประหยัดได้ประมาณ:</span>
+                    <span id="savings-amount" style="font-size: 32px; font-weight: bold; color: var(--color-success-fg);">฿ 0</span>
+                    <span style="font-size: 14px; color: #656d76;">เหลือจ่ายเพียง: <strong id="new-cost">฿ 0</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <h3>💻 Interactive Terminal Demo</h3>
+        <div class="terminal-tabs">
+            <button class="tab-btn active" onclick="switchDemo('git', this)">git status (-80%)</button>
+            <button class="tab-btn" onclick="switchDemo('test', this)">npm test (-90%)</button>
+            <button class="tab-btn" onclick="switchDemo('docker', this)">docker ps (-80%)</button>
+        </div>
+        <div class="comparison-grid">
+            <div>
+                <span class="terminal-label">❌ แบบเดิม (LLM อ่านทั้งหมด)</span>
+                <div id="demo-raw" class="terminal-window"></div>
+            </div>
+            <div>
+                <span class="terminal-label">✅ ผ่าน RTK (เน้นเฉพาะที่สำคัญ)</span>
+                <div id="demo-rtk" class="terminal-window"></div>
+            </div>
+        </div>
+
+        <!-- Token Savings (Original Table Uncut) -->
+        <h2 id="token-savings">📊 การประหยัด Token (เซสชัน Claude Code 30 นาที)</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>คำสั่ง (Operation)</th>
+                        <th>ความถี่</th>
+                        <th>มาตรฐาน</th>
+                        <th>ใช้ rtk</th>
+                        <th>ประหยัดได้</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>ls / tree</td><td>10x</td><td>2,000</td><td>400</td><td>-80%</td></tr>
+                    <tr><td>cat / read</td><td>20x</td><td>40,000</td><td>12,000</td><td>-70%</td></tr>
+                    <tr><td>grep / rg</td><td>8x</td><td>16,000</td><td>3,200</td><td>-80%</td></tr>
+                    <tr><td>git status</td><td>10x</td><td>3,000</td><td>600</td><td>-80%</td></tr>
+                    <tr><td>git diff</td><td>5x</td><td>10,000</td><td>2,500</td><td>-75%</td></tr>
+                    <tr><td>git log</td><td>5x</td><td>2,500</td><td>500</td><td>-80%</td></tr>
+                    <tr><td>git add/commit/push</td><td>8x</td><td>1,600</td><td>120</td><td>-92%</td></tr>
+                    <tr><td>cargo test / npm test</td><td>5x</td><td>25,000</td><td>2,500</td><td>-90%</td></tr>
+                    <tr><td>ruff check</td><td>3x</td><td>3,000</td><td>600</td><td>-80%</td></tr>
+                    <tr><td>pytest</td><td>4x</td><td>8,000</td><td>800</td><td>-90%</td></tr>
+                    <tr><td>go test</td><td>3x</td><td>6,000</td><td>600</td><td>-90%</td></tr>
+                    <tr><td>docker ps</td><td>3x</td><td>900</td><td>180</td><td>-80%</td></tr>
+                    <tr><td><strong>รวมทั้งหมด</strong></td><td></td><td><strong>~118,000</strong></td><td><strong>~23,900</strong></td><td><strong>-80%</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p><em>* ประมาณการจากโปรเจกต์ TypeScript/Rust ขนาดกลาง การประหยัดจริงขึ้นอยู่กับขนาดโปรเจกต์</em></p>
+
+        <!-- Installation -->
+        <h2 id="installation">การติดตั้ง (Installation)</h2>
+        
+        <h3>Homebrew (แนะนำ)</h3>
+        <div class="code-container">
+            <pre><code id="code-brew">brew install rtk</code></pre>
+            <button class="copy-btn" onclick="copyToClipboard('code-brew')">Copy</button>
+        </div>
+
+        <h3>ติดตั้งด่วน (Linux/macOS)</h3>
+        <div class="code-container">
+            <pre><code id="code-curl">curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh</code></pre>
+            <button class="copy-btn" onclick="copyToClipboard('code-curl')">Copy</button>
+        </div>
+        <p>ติดตั้งไปที่ <code>~/.local/bin</code> ให้เพิ่มลงใน PATH หากจำเป็น:</p>
+        <div class="code-container">
+            <pre><code id="code-path">echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc # หรือ ~/.zshrc</code></pre>
+            <button class="copy-btn" onclick="copyToClipboard('code-path')">Copy</button>
+        </div>
+
+        <h3>Cargo</h3>
+        <div class="code-container">
+            <pre><code id="code-cargo">cargo install --git https://github.com/rtk-ai/rtk</code></pre>
+            <button class="copy-btn" onclick="copyToClipboard('code-cargo')">Copy</button>
+        </div>
+
+        <h3>Pre-built Binaries</h3>
+        <p>ดาวน์โหลดจากแท็บ Releases:</p>
+        <ul>
+            <li><strong>macOS:</strong> <code>rtk-x86_64-apple-darwin.tar.gz</code> / <code>rtk-aarch64-apple-darwin.tar.gz</code></li>
+            <li><strong>Linux:</strong> <code>rtk-x86_64-unknown-linux-musl.tar.gz</code> / <code>rtk-aarch64-unknown-linux-gnu.tar.gz</code></li>
+            <li><strong>Windows:</strong> <code>rtk-x86_64-pc-windows-msvc.zip</code></li>
+        </ul>
+        <p><strong>ผู้ใช้ Windows:</strong> แตกไฟล์ zip และวาง <code>rtk.exe</code> ไว้ที่ใดก็ได้ใน PATH ของคุณ (เช่น <code>C:\Users\<you>\.local\bin</code>) ให้รัน RTK จาก Command Prompt, PowerShell หรือ Windows Terminal — <strong>ห้ามดับเบิลคลิกที่ไฟล์ .exe เด็ดขาด (มันจะกระพริบแล้วปิดไป)</strong> เพื่อประสบการณ์ที่ดีที่สุด แนะนำให้ใช้ WSL ดูรายละเอียดเพิ่มเติมที่ส่วน Windows ด้านล่าง</p>
+
+        <h3>ตรวจสอบการติดตั้ง</h3>
+        <div class="code-container">
+            <pre><code id="code-verify">rtk --version # ควรแสดง "rtk 0.28.2" (หรือเวอร์ชันล่าสุด)
+rtk gain      # ควรแสดงสถิติการประหยัด token</code></pre>
+            <button class="copy-btn" onclick="copyToClipboard('code-verify')">Copy</button>
+        </div>
+        <blockquote>
+            <p><strong>คำเตือนเรื่องชื่อซ้ำ (Name collision warning):</strong> มีอีกโปรเจกต์หนึ่งชื่อ "rtk" (Rust Type Kit) บน crates.io หากรัน <code>rtk gain</code> แล้วล้มเหลว แปลว่าคุณติดตั้งแพ็กเกจผิด ให้ใช้คำสั่ง <code>cargo install --git</code> ที่แนะนำไว้ด้านบนแทน</p>
+        </blockquote>
+
+        <!-- Quick Start -->
+        <h2 id="quick-start">เริ่มต้นใช้งานอย่างรวดเร็ว (Quick Start)</h2>
+        <div class="code-container">
+            <pre><code id="code-quickstart"># 1. ติดตั้งสำหรับเครื่องมือ AI ของคุณ
+rtk init -g                # Claude Code / Copilot (ค่าเริ่มต้น)
+rtk init -g --gemini       # Gemini CLI
+rtk init -g --codex        # Codex (OpenAI)
+rtk init -g --agent cursor # Cursor
+rtk init --agent windsurf  # Windsurf
+rtk init --agent cline     # Cline / Roo Code
+rtk init --agent kilocode  # Kilo Code
+rtk init --agent antigravity # Google Antigravity
+
+# 2. รีสตาร์ทเครื่องมือ AI ของคุณ แล้วทดสอบ
+git status
+# ระบบจะทำการเขียนทับอัตโนมัติเป็น rtk git status</code></pre>
+            <button class="copy-btn" onclick="copyToClipboard('code-quickstart')">Copy</button>
+        </div>
+
+        <p>ระบบ Hook จะทำการเขียนทับคำสั่ง Bash อย่างโปร่งใส (เช่น <code>git status -> rtk git status</code>) ก่อนการทำงานจริง Claude จะไม่เห็นการเขียนทับนี้ แต่จะได้รับ Output ที่ถูกบีบอัดแล้ว</p>
+        <blockquote>
+            <p><strong>สำคัญ:</strong> Hook จะทำงานเฉพาะกับการเรียก Bash tool เท่านั้น เครื่องมือแบบ Built-in ของ Claude Code อย่างเช่น <code>Read</code>, <code>Grep</code>, และ <code>Glob</code> จะไม่วิ่งผ่าน Bash hook จึงไม่ถูกเขียนทับอัตโนมัติ หากต้องการให้ RTK บีบอัดผลลัพธ์เหล่านั้น ให้ใช้คำสั่ง Shell ทั่วไปแทน (<code>cat / head / tail</code>, <code>rg / grep</code>, <code>find</code>) หรือเรียก <code>rtk read</code>, <code>rtk grep</code>, หรือ <code>rtk find</code> ตรงๆ</p>
+        </blockquote>
+
+        <!-- How it works -->
+        <h2 id="how-it-works">หลักการทำงาน (How It Works)</h2>
+        <pre><code>แบบไม่มี rtk:                        แบบมี rtk:
+Claude --git status--> shell --> git     Claude --git status--> RTK --> git
+         ^                       |                ^                     |
+         |  ~2,000 tokens (raw)  |                |     ~200 tokens     |
+         |                       |             filter                   |
+         +-----------------------+                +---- (filtered) -----+</code></pre>
+        <p>ใช้ 4 กลยุทธ์ร่วมกันในแต่ละประเภทคำสั่ง:</p>
+        <ul>
+            <li><strong>Smart Filtering</strong> - ลบขยะ (คอมเมนต์, ช่องว่าง, Boilerplate)</li>
+            <li><strong>Grouping</strong> - จัดกลุ่มรายการที่คล้ายกัน (รวมไฟล์ตามโฟลเดอร์, Error ตามประเภท)</li>
+            <li><strong>Truncation</strong> - เก็บเฉพาะบริบทที่สำคัญ ตัดส่วนที่เยิ่นเย้อ</li>
+            <li><strong>Deduplication</strong> - ยุบรวมบรรทัด Log ที่ซ้ำกันและระบุเป็นจำนวนครั้งแทน</li>
+        </ul>
+
+        <!-- All Commands -->
+        <h2 id="commands">คำสั่งที่รองรับทั้งหมด (Commands)</h2>
+        
+        <h3>ไฟล์ (Files)</h3>
+        <pre><code>rtk ls .                    # แผนผังโฟลเดอร์ที่ปรับจูน Token แล้ว
+rtk read file.rs            # การอ่านไฟล์แบบอัจฉริยะ
+rtk read file.rs -l aggressive # แสดงเฉพาะ Signature (ลบส่วน Body ของฟังก์ชัน)
+rtk smart file.rs           # สรุปโค้ดแบบ Heuristic ด้วยความยาว 2 บรรทัด
+rtk find "*.rs" .           # ผลลัพธ์การค้นหาขนาดกะทัดรัด
+rtk grep "pattern" .        # จัดกลุ่มผลลัพธ์การค้นหา
+rtk diff file1 file2        # ความแตกต่างแบบย่อ</code></pre>
+
+        <h3>Git</h3>
+        <pre><code>rtk git status              # สถานะแบบกะทัดรัด
+rtk git log -n 10           # คอมมิตแบบบรรทัดเดียว
+rtk git diff                # ความแตกต่างแบบย่อ
+rtk git add                 # -> "ok"
+rtk git commit -m "msg"     # -> "ok abc1234"
+rtk git push                # -> "ok main"
+rtk git pull                # -> "ok 3 files +10 -2"</code></pre>
+
+        <h3>GitHub CLI</h3>
+        <pre><code>rtk gh pr list              # รายการ PR แบบกะทัดรัด
+rtk gh pr view 42           # รายละเอียด PR + สถานะ Checks
+rtk gh issue list           # รายการ Issue แบบกะทัดรัด
+rtk gh run list             # สถานะ Workflow run</code></pre>
+
+        <h3>Test Runners</h3>
+        <pre><code>rtk test cargo test         # แสดงเฉพาะที่ล้มเหลว (-90%)
+rtk err npm run build       # เฉพาะ Errors/warnings
+rtk vitest run              # Vitest แบบกะทัดรัด (เฉพาะที่ล้มเหลว)
+rtk playwright test         # E2E results (เฉพาะที่ล้มเหลว)
+rtk pytest                  # Python tests (-90%)
+rtk go test                 # Go tests (NDJSON, -90%)
+rtk cargo test              # Cargo tests (-90%)
+rtk rake test               # Ruby minitest (-90%)
+rtk rspec                   # RSpec tests (JSON, -60%+)</code></pre>
+
+        <h3>Build & Lint</h3>
+        <pre><code>rtk lint                    # ESLint จัดกลุ่มตาม Rule/File
+rtk lint biome              # รองรับ linter ตัวอื่นๆ
+rtk tsc                     # TypeScript errors จัดกลุ่มตามไฟล์
+rtk next build              # Next.js build แบบกะทัดรัด
+rtk prettier --check .      # เฉพาะไฟล์ที่ต้องฟอร์แมต
+rtk cargo build             # Cargo build (-80%)
+rtk cargo clippy            # Cargo clippy (-80%)
+rtk ruff check              # Python linting (JSON, -80%)
+rtk golangci-lint run       # Go linting (JSON, -85%)
+rtk rubocop                 # Ruby linting (JSON, -60%+)</code></pre>
+
+        <h3>Package Managers</h3>
+        <pre><code>rtk pnpm list               # Dependency tree กะทัดรัด
+rtk pip list                # Python packages (ตรวจจับ uv อัตโนมัติ)
+rtk pip outdated            # แพ็กเกจที่ล้าสมัย
+rtk bundle install          # Ruby gems (ลบบรรทัด Using ออก)
+rtk prisma generate         # Schema generation (ตัด ASCII art)</code></pre>
+
+        <h3>AWS</h3>
+        <pre><code>rtk aws sts get-caller-identity               # Identity บรรทัดเดียว
+rtk aws ec2 describe-instances                # รายชื่อ Instance กะทัดรัด
+rtk aws lambda list-functions                 # Name/runtime/memory (ลบ Secrets ออก)
+rtk aws logs get-log-events                   # เฉพาะข้อความและ Timestamp
+rtk aws cloudformation describe-stack-events  # เอาข้อผิดพลาดขึ้นก่อน
+rtk aws dynamodb scan                         # ถอด Type annotations
+rtk aws iam list-roles                        # ลบ Policy documents ออก
+rtk aws s3 ls                                 # ตัดให้สั้นลงพร้อม Recovery ผ่าน tee</code></pre>
+
+        <h3>Containers</h3>
+        <pre><code>rtk docker ps               # รายการ Container กะทัดรัด
+rtk docker images           # รายการ Image กะทัดรัด
+rtk docker logs <container> # ลบ Log ที่ซ้ำซ้อน
+rtk docker compose ps       # บริการใน Compose
+rtk kubectl pods            # รายการ Pod กะทัดรัด
+rtk kubectl logs <pod>      # ลบ Log ที่ซ้ำซ้อน
+rtk kubectl services        # รายการ Service กะทัดรัด</code></pre>
+
+        <h3>Data & Analytics</h3>
+        <pre><code>rtk json config.json        # แสดงโครงสร้างโดยไม่เอา Values
+rtk deps                    # สรุป Dependencies
+rtk env -f AWS              # กรอง Env vars
+rtk log app.log             # ลบ Log ที่ซ้ำซ้อน
+rtk curl <url>              # ตรวจจับ JSON + Schema อัตโนมัติ
+rtk wget <url>              # ดาวน์โหลด และลบ Progress bars
+rtk summary <long command>  # สรุปแบบ Heuristic
+rtk proxy <command>         # ส่งผ่านตรงๆ แบบดิบๆ + ติดตามการใช้งาน</code></pre>
+
+        <!-- Analytics -->
+        <h2 id="analytics">Token Savings Analytics</h2>
+        <pre><code>rtk gain                    # สถิติสรุปแบบย่อ
+rtk gain --graph            # กราฟ ASCII (30 วันล่าสุด)
+rtk gain --history          # ประวัติคำสั่งล่าสุด
+rtk gain --daily            # สถิติแยกตามวัน
+rtk gain --all --format json # Export เป็น JSON สำหรับ Dashboard
+rtk discover                # ค้นหาโอกาสประหยัด Token ที่พลาดไป
+rtk discover --all --since 7 # ทุกโปรเจกต์ในรอบ 7 วัน
+rtk session                 # แสดงการใช้งาน RTK ในเซสชันล่าสุด</code></pre>
+
+        <h3>Global Flags</h3>
+        <pre><code>-u, --ultra-compact         # ไอคอน ASCII, ฟอร์แมตบรรทัดเดียว (ประหยัดสูงสุด)
+-v, --verbose               # เพิ่มความละเอียดของการแสดงผล (-v, -vv, -vvv)</code></pre>
+
+        <!-- Auto-Rewrite Hook -->
+        <h2 id="auto-rewrite">Auto-Rewrite Hook</h2>
+        <p>นี่คือวิธีที่มีประสิทธิภาพสูงสุดในการใช้ <code>rtk</code> ระบบ Hook จะดักจับคำสั่ง Bash และทำการเขียนทับให้เป็นคำสั่งของ <code>rtk</code> อย่างโปร่งใสก่อนการรัน<br>
+        <strong>ผลลัพธ์:</strong> มีการใช้งาน <code>rtk</code> 100% ในทุกบทสนทนาและ Subagents โดยไม่มี Overhead จาก Token เลย</p>
+        
+        <p><strong>การติดตั้ง:</strong></p>
+        <pre><code>rtk init -g                 # ติดตั้ง Hook + RTK.md (แนะนำ)
+rtk init -g --opencode      # ปลั๊กอิน OpenCode (แทน Claude Code)
+rtk init -g --auto-patch    # โหมด Non-interactive (สำหรับ CI/CD)
+rtk init -g --hook-only     # ติดตั้งเฉพาะ Hook ไม่เอา RTK.md
+rtk init --show             # ตรวจสอบการติดตั้ง</code></pre>
+        <p><em>หลังจากติดตั้ง ให้รีสตาร์ท Claude Code</em></p>
+
+        <!-- Windows -->
+        <h2 id="windows">Windows</h2>
+        <p>RTK ทำงานบน Windows ได้แต่มีข้อจำกัดบางประการ เนื่องจาก Auto-rewrite hook (<code>rtk-rewrite.sh</code>) ต้องการ Unix shell ดังนั้นบน Windows แบบ Native ระบบ RTK จะถอยกลับ (Fallback) ไปใช้โหมดฉีด <code>CLAUDE.md</code> แทน — หมายความว่า AI ของคุณจะได้รับคำสั่งวิธีใช้ RTK แต่คำสั่งจะไม่ถูกเขียนทับให้อัตโนมัติ</p>
+        
+        <h3>แนะนำ: WSL (รองรับเต็มรูปแบบ)</h3>
+        <p>เพื่อประสบการณ์สูงสุด ให้ใช้ <strong>WSL (Windows Subsystem for Linux)</strong> ภายใน WSL ระบบ RTK จะทำงานเหมือนบน Linux ทุกประการ — รองรับ Hook 100%, เขียนทับคำสั่งอัตโนมัติ, ได้ครบทุกฟีเจอร์:</p>
+        <pre><code># ภายใน WSL
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+rtk init -g</code></pre>
+
+        <h3>Native Windows (รองรับบางส่วน)</h3>
+        <p>บน Native Windows (cmd.exe / PowerShell) ฟิลเตอร์ของ RTK ใช้งานได้ แต่ Hook จะไม่แก้ไขคำสั่งให้:</p>
+        <pre><code># 1. ดาวน์โหลด rtk-x86_64-pc-windows-msvc.zip จาก releases
+# 2. แตกไฟล์ และเพิ่ม rtk.exe ไปยัง PATH ของคุณ
+# 3. กำหนดค่าเริ่มต้น (จะใช้โหมดฉีดข้อมูลลง CLAUDE.md)
+rtk init -g
+# 4. เรียกใช้ rtk ด้วยตัวเอง
+rtk cargo test
+rtk git status</code></pre>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ฟีเจอร์</th>
+                        <th>WSL</th>
+                        <th>Native Windows</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>ฟิลเตอร์คำสั่ง (cargo, git, etc.)</td><td>✅ สมบูรณ์</td><td>✅ สมบูรณ์</td></tr>
+                    <tr><td>Auto-rewrite hook</td><td>✅ ได้</td><td>❌ ไม่ได้ (ใช้ CLAUDE.md แทน)</td></tr>
+                    <tr><td><code>rtk init -g</code></td><td>โหมด Hook</td><td>โหมด CLAUDE.md</td></tr>
+                    <tr><td>rtk gain / Analytics</td><td>✅ สมบูรณ์</td><td>✅ สมบูรณ์</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Supported AI Tools -->
+        <h2 id="supported-tools">เครื่องมือ AI ที่รองรับ (Supported AI Tools)</h2>
+        <p>RTK รองรับเครื่องมือ AI Coding 12 รายการ แต่ละตัวจะมีการเขียนทับ Shell command แบบโปร่งใส ช่วยประหยัด Token ได้ 60-90%</p>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>เครื่องมือ (Tool)</th>
+                        <th>วิธีการติดตั้ง (Install Method)</th>
+                        <th>การทำงานเบื้องหลัง</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Claude Code</td><td><code>rtk init -g</code></td><td>PreToolUse hook (bash)</td></tr>
+                    <tr><td>GitHub Copilot (VS Code)</td><td><code>rtk init -g --copilot</code></td><td>PreToolUse hook — transparent rewrite</td></tr>
+                    <tr><td>GitHub Copilot CLI</td><td><code>rtk init -g --copilot</code></td><td>PreToolUse deny-with-suggestion (ข้อจำกัด CLI)</td></tr>
+                    <tr><td>Cursor</td><td><code>rtk init -g --agent cursor</code></td><td>preToolUse hook (hooks.json)</td></tr>
+                    <tr><td>Gemini CLI</td><td><code>rtk init -g --gemini</code></td><td>BeforeTool hook</td></tr>
+                    <tr><td>Codex</td><td><code>rtk init -g --codex</code></td><td>AGENTS.md + คำสั่ง RTK.md</td></tr>
+                    <tr><td>Windsurf</td><td><code>rtk init --agent windsurf</code></td><td>.windsurfrules (project-scoped)</td></tr>
+                    <tr><td>Cline / Roo Code</td><td><code>rtk init --agent cline</code></td><td>.clinerules (project-scoped)</td></tr>
+                    <tr><td>OpenCode</td><td><code>rtk init -g --opencode</code></td><td>Plugin TS (tool.execute.before)</td></tr>
+                    <tr><td>OpenClaw</td><td><code>openclaw plugins install ./openclaw</code></td><td>Plugin TS (before_tool_call)</td></tr>
+                    <tr><td>Mistral Vibe</td><td>กำลังพัฒนา (#800)</td><td>รอการอัปเดตจากต้นน้ำ</td></tr>
+                    <tr><td>Kilo Code</td><td><code>rtk init --agent kilocode</code></td><td>.kilocode/rules/rtk-rules.md (project-scoped)</td></tr>
+                    <tr><td>Google Antigravity</td><td><code>rtk init --agent antigravity</code></td><td>.agents/rules/antigravity-rtk-rules.md</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Configuration -->
+        <h2 id="configuration">การตั้งค่า (Configuration)</h2>
+        <p>ไฟล์อยู่ที่ <code>~/.config/rtk/config.toml</code> (macOS: <code>~/Library/Application Support/rtk/config.toml</code>):</p>
+        <pre><code>[hooks]
+exclude_commands = ["curl", "playwright"] # ข้ามการ rewrite คำสั่งเหล่านี้
+
+[tee]
+enabled = true # บันทึก output ดิบไว้เมื่อเกิดการล้มเหลว (ค่าเริ่มต้น: true)
+mode = "failures" # "failures" (ล้มเหลวเท่านั้น), "always" (เสมอ), หรือ "never" (ไม่เลย)</code></pre>
+        <p>เมื่อคำสั่งเกิดทำงานล้มเหลว (Failed) RTK จะบันทึก Output เต็มรูปแบบโดยไม่กรองทิ้ง เพื่อให้ LLM สามารถเข้าไปอ่านได้ถ้าจำเป็นต้องใช้โดยไม่ต้องรันคำสั่งซ้ำ:</p>
+        <pre><code>FAILED: 2/15 tests
+[full output: ~/.local/share/rtk/tee/1707753600_cargo_test.log]</code></pre>
+
+    </article>
+
+    <script>
+        // Savings Calculator
+        function calculateSavings() {
+            const costInput = document.getElementById('monthly-cost').value;
+            const cost = parseFloat(costInput);
+            const savingsEl = document.getElementById('savings-amount');
+            const newCostEl = document.getElementById('new-cost');
+
+            if (!isNaN(cost) && cost > 0) {
+                const savings = cost * 0.75;
+                const newCost = cost - savings;
+                savingsEl.innerText = '฿ ' + savings.toLocaleString('th-TH', {maximumFractionDigits: 2});
+                newCostEl.innerText = '฿ ' + newCost.toLocaleString('th-TH', {maximumFractionDigits: 2});
+            } else {
+                savingsEl.innerText = '฿ 0';
+                newCostEl.innerText = '฿ 0';
+            }
+        }
+
+        // Terminal Demo
+        const demoData = {
+            git: {
+                raw: `<span class="tag-cmd">$ git status</span>\nOn branch main\nYour branch is up to date with 'origin/main'.\n\nChanges not staged for commit:\n  (use "git add <file>..." to update what will be committed)\n        modified:   src/app.js\n        modified:   package.json\n\nUntracked files:\n        tests/new_test.js\n\nno changes added to commit`,
+                rtk: `<span class="tag-cmd">$ git status</span>\n<span class="tag-success">M</span> src/app.js\n<span class="tag-success">M</span> package.json\n<span class="tag-error">?</span> tests/new_test.js`
+            },
+            test: {
+                raw: `<span class="tag-cmd">$ npm test</span>\nFAIL  tests/auth.test.js\n  ● Auth › should fail with wrong password\n    expect(received).toBe(expected)\n\n    Expected: 401\n    Received: 200\n\n      at Object.toBe (tests/auth.test.js:35:24)\n      ... 15 more lines of internal stack trace ...\n\nTest Suites: 1 failed, 15 passed, 16 total\nTime:        4.2s`,
+                rtk: `<span class="tag-cmd">$ npm test</span>\n<span class="tag-error">FAILED: tests/auth.test.js</span>\n  ● Auth › should fail with wrong password\n    Expected: 401\n    Received: 200\n    at tests/auth.test.js:35:24\n\n<span class="tag-success">Summary: 1 failed, 120 passed</span>`
+            },
+            docker: {
+                raw: `<span class="tag-cmd">$ docker ps</span>\nCONTAINER ID   IMAGE     COMMAND                  CREATED       STATUS       PORTS     NAMES\na1b2c3d4e5f6   nginx     "/docker-entrypoint.…"   2 hours ago   Up 2 hours   80/tcp    web-server`,
+                rtk: `<span class="tag-cmd">$ docker ps</span>\na1b2c3d4 web-server <span class="tag-success">Up 2 hours</span> (nginx)`
+            }
+        };
+
+        function switchDemo(type, btnElement) {
+            document.getElementById('demo-raw').innerHTML = demoData[type].raw;
+            document.getElementById('demo-rtk').innerHTML = demoData[type].rtk;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
+        // Initialize Demo
+        window.onload = () => switchDemo('git', document.querySelector('.tab-btn.active'));
+
+        // Copy to Clipboard
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try { document.execCommand('copy'); showToast(); } catch (err) {}
+            document.body.removeChild(textArea);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+    </script>
+</body>
+</html>

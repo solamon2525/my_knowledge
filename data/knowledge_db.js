@@ -121,6 +121,18 @@ const KNOWLEDGE = [
     link: "repo-tracker.html",
     date: "2026-04-15"
   },
+  {
+    id: "tools-004",
+    category: "Tools & DevOps",
+    emoji: "🛠️",
+    color: "#f59e0b",
+    title: "RTK - Rust Token Killer",
+    desc: "CLI Proxy ประสิทธิภาพสูงที่ช่วยลดการบริโภค Token ของ LLM ได้ 60-90%",
+    tags: ["CLI", "LLM", "Rust", "Proxy", "AI"],
+    badge: "new",
+    link: "rtk.html",
+    date: "2026-04-16"
+  },
 
   /* ─── 📱 Mobile ─── */
   {
