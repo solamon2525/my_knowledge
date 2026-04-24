@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini CLI Guide - คู่มือการใช้งานอัจฉริยะ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Anuphan', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        code { background: #1e293b; color: #fbbf24; padding: 0.2rem 0.4rem; rounded: 4px; font-family: monospace; }
+        pre { background: #020617; padding: 1rem; border-radius: 8px; overflow-x: auto; border: 1px solid #1e293b; }
+        .prose h2 { color: #60a5fa; margin-top: 2rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: 1rem; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="mb-12">
+            <a href="index.html" class="text-blue-400 hover:text-blue-300 mb-4 inline-block"><i class="fas fa-arrow-left mr-2"></i> กลับหน้าหลัก</a>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Gemini CLI - พลัง AI ใน Terminal</h1>
+            <p class="text-slate-400 text-lg">คู่มือการใช้งานผู้ช่วยวิศวกรซอฟต์แวร์อัจฉริยะที่รันตรงบนเครื่องคุณ</p>
+        </header>
+
+        <!-- Content -->
+        <div class="glass p-6 md:p-10 rounded-3xl prose prose-invert max-w-none">
+            
+            <h2>1. Gemini CLI คืออะไร?</h2>
+            <p>Gemini CLI คือเครื่องมือบรรทัดคำสั่ง (Command Line Interface) ที่พัฒนาโดย Google เพื่อให้นักพัฒนาสามารถใช้งานโมเดล Gemini 1.5 Pro/Flash ได้โดยตรงจาก Terminal ของเครื่องตนเอง มีความสามารถเหนือกว่าแชทบอททั่วไปเพราะสามารถ <strong>เข้าถึงไฟล์ในเครื่อง รันคำสั่ง Shell และค้นหาข้อมูลจากอินเทอร์เน็ตได้</strong></p>
+
+            <h2>2. การติดตั้ง (Installation)</h2>
+            <p>คุณต้องมี Node.js ติดตั้งอยู่ในเครื่องก่อน จากนั้นรันคำสั่ง:</p>
+            <pre><code>npm install -g @google/gemini-cli</code></pre>
+            <p>หรือถ้าต้องการรันชั่วคราวโดยไม่ติดตั้ง:</p>
+            <pre><code>npx @google/gemini-cli</code></pre>
+
+            <h2>3. การเริ่มต้นใช้งาน</h2>
+            <p>เพียงพิมพ์คำสั่งสั้นๆ ใน PowerShell หรือ Terminal:</p>
+            <pre><code>gemini</code></pre>
+            <p>ในครั้งแรก โปรแกรมจะขอให้คุณใส่ <strong>API Key</strong> ซึ่งคุณสามารถรับได้ฟรีจาก <a href="https://aistudio.google.com/" class="text-blue-400 underline" target="_blank">Google AI Studio</a></p>
+
+            <h2>4. ฟีเจอร์เด่น (Key Features)</h2>
+            <ul class="list-disc ml-6 space-y-2 text-slate-300">
+                <li><strong>วิเคราะห์โค้ด (Code Analysis):</strong> สั่งให้อ่านไฟล์และสรุปการทำงานหรือหาจุดบกพร่องได้ทันที</li>
+                <li><strong>รันคำสั่ง Shell:</strong> สั่งให้ AI รันคำสั่งเช่น <code>git status</code>, <code>npm test</code> หรือจัดการไฟล์ได้โดยตรง</li>
+                <li><strong>Google Search Integration:</strong> AI สามารถค้นหาข้อมูลล่าสุดจากอินเทอร์เน็ตเพื่อตอบคำถามที่แม่นยำขึ้น</li>
+                <li><strong>Multimodal:</strong> รองรับการประมวลผลทั้งข้อความ โค้ด และรูปภาพ (ถ้ามีไฟล์ภาพในโปรเจกต์)</li>
+            </ul>
+
+            <h2>5. ยูสเคสต่างๆ (Use Cases)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                    <h3 class="font-bold text-blue-400 mb-2">💻 งานเขียนโค้ด</h3>
+                    <p class="text-sm">"ช่วยวิเคราะห์ไฟล์ index.js และปรับปรุงเรื่อง Error Handling ให้หน่อย"</p>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                    <h3 class="font-bold text-green-400 mb-2">🚀 งาน DevOps</h3>
+                    <p class="text-sm">"ช่วยสร้างไฟล์ Dockerfile สำหรับโปรเจกต์ React + Node.js นี้ให้ที"</p>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                    <h3 class="font-bold text-purple-400 mb-2">📂 การจัดการข้อมูล</h3>
+                    <p class="text-sm">"ดึงข้อมูลจาก README.md และสรุปเป็น JSON format ให้หน่อย"</p>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                    <h3 class="font-bold text-red-400 mb-2">🔍 การวิจัย</h3>
+                    <p class="text-sm">"ค้นหา library สำหรับทำ Chart ใน React ที่ได้รับความนิยมในปี 2026"</p>
+                </div>
+            </div>
+
+            <h2>6. คำสั่งลัด (Slash Commands)</h2>
+            <table class="w-full mt-4 text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-700 text-blue-300">
+                        <th class="py-2">คำสั่ง</th>
+                        <th class="py-2">หน้าที่</th>
+                    </tr>
+                </thead>
+                <tbody class="text-slate-400">
+                    <tr class="border-b border-slate-800">
+                        <td class="py-2"><code>/help</code></td>
+                        <td class="py-2">แสดงรายการคำสั่งทั้งหมด</td>
+                    </tr>
+                    <tr class="border-b border-slate-800">
+                        <td class="py-2"><code>/bug</code></td>
+                        <td class="py-2">รายงานปัญหาการใช้งาน</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2"><code>exit</code></td>
+                        <td class="py-2">ออกจากโปรแกรม</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-slate-500 pb-10">
+            <p>© 2026 My Knowledge Base · Built with Gemini CLI</p>
+        </footer>
+    </div>
+</body>
+</html>
