@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build with Claude - คู่มือการใช้งานส่วนเสริม AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Anuphan', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .prose h2 { color: #8b5cf6; margin-top: 2rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 600; border-left: 4px solid #8b5cf6; padding-left: 1rem; }
+        .category-card { background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); padding: 1rem; border-radius: 12px; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-12">
+            <a href="index.html" class="text-purple-400 hover:text-purple-300 mb-4 inline-block"><i class="fas fa-arrow-left mr-2"></i> กลับหน้าหลัก</a>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Build with Claude</h1>
+            <p class="text-slate-400 text-lg">ศูนย์รวมส่วนขยาย ทักษะ และเครื่องมือสำหรับนิเวศน์วิทยาของ Claude AI</p>
+        </header>
+
+        <div class="glass p-6 md:p-10 rounded-3xl prose prose-invert max-w-none">
+            <h2>1. Build with Claude คืออะไร?</h2>
+            <p>เป็น Marketplace และ Registry สำหรับเครื่องมือที่ช่วยเพิ่มความสามารถให้กับ Claude AI (เช่น Claude.ai, Claude Code และ API) โดยรวบรวมส่วนขยายที่พร้อมใช้งานมากกว่า 500 รายการ</p>
+
+            <h2>2. หมวดหมู่เครื่องมือหลัก</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-sm">
+                <div class="category-card">
+                    <h3 class="font-bold text-purple-400 mb-1">🛠️ Skills (130+)</h3>
+                    <p>ทักษะการเชื่อมต่อกับแอปภายนอก เช่น Google Drive, GitHub, Slack</p>
+                </div>
+                <div class="category-card">
+                    <h3 class="font-bold text-purple-400 mb-1">🤖 Subagents (110+)</h3>
+                    <p>AI Persona เฉพาะทาง เช่น ผู้เชี่ยวชาญด้าน Security หรือ Data Analyst</p>
+                </div>
+                <div class="category-card">
+                    <h3 class="font-bold text-purple-400 mb-1">⌨️ Commands (170+)</h3>
+                    <p>ชุดคำสั่งสำเร็จรูปสำหรับ Claude Code CLI เพื่อเร่งความเร็วการพัฒนา</p>
+                </div>
+                <div class="category-card">
+                    <h3 class="font-bold text-purple-400 mb-1">🔗 Plugins & Hooks</h3>
+                    <p>ส่วนขยายสำหรับจัดการ Workflow อัตโนมัติในระหว่างการเขียนโค้ด</p>
+                </div>
+            </div>
+
+            <h2>3. มาตรฐานที่ใช้ (MCP)</h2>
+            <p>เครื่องมือส่วนใหญ่พัฒนาบนมาตรฐาน <strong>Model Context Protocol (MCP)</strong> ซึ่งช่วยให้ AI สามารถเข้าถึงข้อมูลและเครื่องมือจากแหล่งต่างๆ ได้อย่างปลอดภัยและเป็นมาตรฐานเดียวกัน</p>
+
+            <h2>4. ประโยชน์สำหรับนักพัฒนา</h2>
+            <ul class="list-disc ml-6 space-y-2 text-slate-300">
+                <li>ประหยัดเวลาในการเขียนโค้ดเชื่อมต่อ (Integrations) เอง</li>
+                <li>เพิ่มความสามารถเฉพาะด้านให้กับ AI เพื่อทำงานที่ซับซ้อนขึ้น</li>
+                <li>ใช้คำสั่ง CLI สำเร็จรูปเพื่อจัดการงานที่ทำซ้ำๆ เช่น การสร้างระบบ Auth</li>
+            </ul>
+
+            <div class="mt-8 p-6 bg-purple-900/20 border border-purple-500/30 rounded-2xl text-center">
+                <p class="mb-4 text-purple-300 font-semibold">เข้าชมเว็บไซต์อย่างเป็นทางการเพื่อค้นหาเครื่องมือ</p>
+                <a href="https://buildwithclaude.com/" target="_blank" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-full font-bold transition inline-block">
+                    buildwithclaude.com <i class="fas fa-external-link-alt ml-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-slate-500 pb-10">
+            <p>© 2026 My Knowledge Base · Data from BuildwithClaude</p>
+        </footer>
+    </div>
+</body>
+</html>

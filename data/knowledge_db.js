@@ -185,4 +185,16 @@ const KNOWLEDGE = [
     link: "claude-code-features.html",
     date: "2026-04-15"
   },
+  {
+    id: "ai-003",
+    category: "AI & Prompt Engineering",
+    emoji: "✨",
+    color: "#00d4ff",
+    title: "Build with Claude - ตลาดส่วนเสริม AI",
+    desc: "สำรวจ Marketplace สำหรับ Claude AI ที่รวบรวมทักษะ (Skills), ผู้ช่วย (Subagents) และชุดคำสั่งมากกว่า 500 รายการ เพื่อเพิ่มขีดความสามารถให้ AI ทำงานได้เหนือชั้น",
+    tags: ["Claude", "AI Extensions", "Marketplace", "MCP"],
+    badge: "hot",
+    link: "build-with-claude.html",
+    date: "2026-04-24"
+  },
 ];
