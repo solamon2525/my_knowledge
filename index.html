@@ -9,8 +9,54 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/index.css" />
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --text-color: #1e293b;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --nav-bg: rgba(255, 255, 255, 0.8);
+      --hero-sub: #64748b;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --text-color: #f1f5f9;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --nav-bg: rgba(15, 23, 42, 0.8);
+      --hero-sub: #94a3b8;
+    }
+
+    body { background-color: var(--bg-color); color: var(--text-color); transition: background 0.3s; }
+    nav { background: var(--nav-bg) !important; backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); }
+    .card { background: var(--card-bg) !important; border: 1px solid var(--card-border) !important; color: var(--text-color) !important; }
+    .hero-sub { color: var(--hero-sub) !important; }
+    
+    /* Layout Switch Styles */
+    .list-view .cards-grid { grid-template-columns: 1fr !important; }
+    .list-view .card { display: flex; flex-direction: row; align-items: center; gap: 20px; padding: 15px 25px; }
+    .list-view .card-header { margin-bottom: 0; }
+    .list-view .card-desc { display: -webkit-box; -webkit-line-clamp: 1; margin-bottom: 0; }
+    .list-view .card-footer { margin-top: 0; margin-left: auto; border-top: none; padding-top: 0; }
+
+    .controls-group { display: flex; gap: 10px; align-items: center; }
+    .control-btn { 
+      background: var(--card-bg); 
+      border: 1px solid var(--card-border); 
+      color: var(--text-color);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+    }
+    .control-btn:hover { background: var(--card-border); }
+  </style>
 </head>
-<body>
+<body data-theme="dark">
 <div class="bg-orbs">
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
@@ -39,9 +85,13 @@
           </div>
         </div>
 
-        <div class="nav-stats">
-          <div>หัวข้อทั้งหมด <span id="total-count">0</span></div>
-          <div>หมวดหมู่ <span id="cat-count">0</span></div>
+        <div class="controls-group">
+          <button class="control-btn" id="theme-toggle" title="สลับโหมด มืด/สว่าง">
+            <span id="theme-icon">🌙</span>
+          </button>
+          <button class="control-btn" id="layout-toggle" title="สลับมุมมอง Grid/List">
+            <span id="layout-icon">⊞</span>
+          </button>
         </div>
       </div>
     </div>
@@ -50,7 +100,7 @@
   <main class="container">
     <!-- HERO -->
     <section class="hero fade-in">
-      <div class="hero-badge">✨ Knowledge Base v1.0</div>
+      <div class="hero-badge">✨ Knowledge Base v1.1</div>
       <h1>My Knowledge Base</h1>
       <p class="hero-sub">คลังความรู้ส่วนตัว รวบรวมสรุปความรู้จากแหล่งต่างๆ จัดหมวดหมู่เพื่อการค้นหาและทบทวนได้ง่าย</p>
       <div class="hero-tags" id="category-filters">
@@ -83,26 +133,34 @@
 
 <script src="data/knowledge_db.js"></script>
 <script>
-
-
-
 /* =====================================================
-   ⚙️ ENGINE — ไม่ต้องแก้ไขส่วนนี้
+   ⚙️ ENGINE — ระบบอัตโนมัติ
    ===================================================== */
-// Init
+
 let currentFilter = 'all';
 let currentSearch = '';
 let currentLayout = localStorage.getItem('kb-layout') || 'grid';
 let currentTheme = localStorage.getItem('kb-theme') || 'dark';
 
-// Apply stored settings
-document.body.setAttribute('data-theme', currentTheme);
-if (currentLayout === 'list') document.body.classList.add('list-view');
-updateIcons();
+// 1. จัดเรียงข้อมูลตามวันที่ทันที (ใหม่ไปเก่า)
+KNOWLEDGE.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+// 2. ฟังก์ชันแสดงผลและโหลดเนื้อหาอัตโนมัติ
+function initApp() {
+  document.body.setAttribute('data-theme', currentTheme);
+  if (currentLayout === 'list') document.body.classList.add('list-view');
+  updateIcons();
+  buildFilters();
+  buildStats();
+  render();
+  updateLastUpdated();
+}
 
 function updateIcons() {
-  document.getElementById('theme-icon').textContent = currentTheme === 'dark' ? '🌙' : '☀️';
-  document.getElementById('layout-icon').textContent = currentLayout === 'grid' ? '⊞' : '〓';
+  const themeIcon = document.getElementById('theme-icon');
+  const layoutIcon = document.getElementById('layout-icon');
+  if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+  if (layoutIcon) layoutIcon.textContent = currentLayout === 'grid' ? '⊞' : '〓';
 }
 
 // Theme Toggle
@@ -121,19 +179,14 @@ document.getElementById('layout-toggle').onclick = () => {
   updateIcons();
 };
 
-// Sort KNOWLEDGE by date descending (Newest first)
-KNOWLEDGE.sort((a, b) => new Date(b.date) - new Date(a.date));
-
 // Group by category
 function groupByCategory(items) {
-  // We keep the sorted order even after grouping
   return items.reduce((acc, item) => {
     if (!acc[item.category]) acc[item.category] = { emoji: item.emoji, color: item.color, items: [] };
     acc[item.category].items.push(item);
     return acc;
   }, {});
 }
-
 
 // Badge HTML
 function badgeHTML(badge) {
@@ -223,6 +276,12 @@ function buildFilters() {
   const cats = [...new Set(KNOWLEDGE.map(k => k.category))];
   const container = document.getElementById('category-filters');
   const catObj = groupByCategory(KNOWLEDGE);
+  
+  // Clear existing except "All"
+  const allBtn = container.querySelector('[data-filter="all"]');
+  container.innerHTML = '';
+  container.appendChild(allBtn);
+
   cats.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = 'hero-tag';
@@ -232,7 +291,6 @@ function buildFilters() {
     container.appendChild(btn);
   });
 
-  // Update nav stats
   document.getElementById('total-count').textContent = KNOWLEDGE.length;
   document.getElementById('cat-count').textContent = cats.length;
 }
@@ -242,6 +300,7 @@ function buildStats() {
   const cats = groupByCategory(KNOWLEDGE);
   const totalNew = KNOWLEDGE.filter(k => k.badge === 'new').length;
   const bar = document.getElementById('stats-bar');
+  if (!bar) return;
   bar.innerHTML = `
     <div class="stat-card">
       <div class="stat-icon">📖</div>
@@ -288,16 +347,16 @@ document.getElementById('search-input').addEventListener('input', function() {
   render();
 });
 
-// Last updated
-document.getElementById('last-updated').textContent = (() => {
+// Update last updated date
+function updateLastUpdated() {
   const dates = KNOWLEDGE.map(k => k.date).filter(Boolean).sort().reverse();
-  return dates[0] ? formatDate(dates[0]) : '-';
-})();
+  const lastUpdatedEl = document.getElementById('last-updated');
+  if (lastUpdatedEl) lastUpdatedEl.textContent = dates[0] ? formatDate(dates[0]) : '-';
+}
 
-// Init
-buildFilters();
-buildStats();
-render();
+// ** RUN IMMEDIATELY **
+initApp();
+
 </script>
 </body>
 </html>
