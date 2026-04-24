@@ -100,11 +100,11 @@
   <main class="container">
     <!-- HERO -->
     <section class="hero fade-in">
-      <div class="hero-badge">✨ Knowledge Base v1.1</div>
+      <div class="hero-badge">✨ Knowledge Base v1.2</div>
       <h1>My Knowledge Base</h1>
       <p class="hero-sub">คลังความรู้ส่วนตัว รวบรวมสรุปความรู้จากแหล่งต่างๆ จัดหมวดหมู่เพื่อการค้นหาและทบทวนได้ง่าย</p>
       <div class="hero-tags" id="category-filters">
-        <button class="hero-tag active" data-filter="all" onclick="filterCategory('all', this)">🌐 ทั้งหมด</button>
+        <button class="hero-tag active" data-filter="all" id="btn-filter-all">🌐 ทั้งหมด</button>
       </div>
     </section>
 
@@ -112,7 +112,7 @@
     <div class="stats-bar fade-in" id="stats-bar"></div>
 
     <!-- NO RESULTS -->
-    <div id="no-results">
+    <div id="no-results" style="display:none;">
       <div class="big-emoji">🔍</div>
       <h3>ไม่พบผลลัพธ์</h3>
       <p>ลองค้นหาด้วยคำอื่น หรือเลือกหมวดหมู่อื่น</p>
@@ -134,7 +134,7 @@
 <script src="data/knowledge_db.js"></script>
 <script>
 /* =====================================================
-   ⚙️ ENGINE — ระบบอัตโนมัติ
+   ⚙️ ENGINE — ระบบอัตโนมัติ 
    ===================================================== */
 
 let currentFilter = 'all';
@@ -142,18 +142,25 @@ let currentSearch = '';
 let currentLayout = localStorage.getItem('kb-layout') || 'grid';
 let currentTheme = localStorage.getItem('kb-theme') || 'dark';
 
-// 1. จัดเรียงข้อมูลตามวันที่ทันที (ใหม่ไปเก่า)
+// จัดเรียงข้อมูลตามวันที่ (ใหม่ไปเก่า)
 KNOWLEDGE.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-// 2. ฟังก์ชันแสดงผลและโหลดเนื้อหาอัตโนมัติ
+// ฟังก์ชันเริ่มต้นแอป
 function initApp() {
+  // ตั้งค่า Theme และ Layout
   document.body.setAttribute('data-theme', currentTheme);
   if (currentLayout === 'list') document.body.classList.add('list-view');
+  
   updateIcons();
   buildFilters();
   buildStats();
+  
+  // สั่ง Render ทันที
   render();
   updateLastUpdated();
+  
+  // ตั้งค่า Event Listeners สำหรับปุ่มที่ไม่ได้ใส่ใน HTML โดยตรง
+  document.getElementById('btn-filter-all').onclick = function() { filterCategory('all', this); };
 }
 
 function updateIcons() {
@@ -231,7 +238,7 @@ function cardHTML(item) {
   `;
 }
 
-// Render
+// Render Core
 function render() {
   const q = currentSearch.toLowerCase().trim();
   let filtered = KNOWLEDGE.filter(item => {
@@ -250,10 +257,10 @@ function render() {
 
   if (filtered.length === 0) {
     sections.innerHTML = '';
-    noResults.style.display = 'block';
+    if (noResults) noResults.style.display = 'block';
     return;
   }
-  noResults.style.display = 'none';
+  if (noResults) noResults.style.display = 'none';
 
   sections.innerHTML = Object.entries(grouped).map(([catName, cat]) => `
     <section class="category-section">
@@ -275,19 +282,21 @@ function render() {
 function buildFilters() {
   const cats = [...new Set(KNOWLEDGE.map(k => k.category))];
   const container = document.getElementById('category-filters');
+  if (!container) return;
+  
   const catObj = groupByCategory(KNOWLEDGE);
   
-  // Clear existing except "All"
-  const allBtn = container.querySelector('[data-filter="all"]');
+  // เก็บปุ่ม All ไว้
+  const allBtn = document.getElementById('btn-filter-all');
   container.innerHTML = '';
-  container.appendChild(allBtn);
+  if (allBtn) container.appendChild(allBtn);
 
   cats.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = 'hero-tag';
     btn.dataset.filter = cat;
     btn.innerHTML = `${catObj[cat].emoji} ${cat}`;
-    btn.onclick = () => filterCategory(cat, btn);
+    btn.onclick = function() { filterCategory(cat, this); };
     container.appendChild(btn);
   });
 
@@ -333,7 +342,7 @@ function buildStats() {
   `;
 }
 
-// Filter by category
+// Filter Action
 function filterCategory(cat, el) {
   currentFilter = cat;
   document.querySelectorAll('.hero-tag').forEach(b => b.classList.remove('active'));
@@ -341,7 +350,7 @@ function filterCategory(cat, el) {
   render();
 }
 
-// Search handler
+// Search Action
 document.getElementById('search-input').addEventListener('input', function() {
   currentSearch = this.value;
   render();
@@ -354,8 +363,12 @@ function updateLastUpdated() {
   if (lastUpdatedEl) lastUpdatedEl.textContent = dates[0] ? formatDate(dates[0]) : '-';
 }
 
-// ** RUN IMMEDIATELY **
-initApp();
+// ** สั่งรันทันทีเมื่อโหลดไฟล์เสร็จ **
+document.addEventListener('DOMContentLoaded', initApp);
+// ป้องกันกรณี DOMContentLoaded รันไปแล้ว
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+  initApp();
+}
 
 </script>
 </body>
