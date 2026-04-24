@@ -89,18 +89,51 @@
 /* =====================================================
    ⚙️ ENGINE — ไม่ต้องแก้ไขส่วนนี้
    ===================================================== */
-
+// Init
 let currentFilter = 'all';
 let currentSearch = '';
+let currentLayout = localStorage.getItem('kb-layout') || 'grid';
+let currentTheme = localStorage.getItem('kb-theme') || 'dark';
+
+// Apply stored settings
+document.body.setAttribute('data-theme', currentTheme);
+if (currentLayout === 'list') document.body.classList.add('list-view');
+updateIcons();
+
+function updateIcons() {
+  document.getElementById('theme-icon').textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+  document.getElementById('layout-icon').textContent = currentLayout === 'grid' ? '⊞' : '〓';
+}
+
+// Theme Toggle
+document.getElementById('theme-toggle').onclick = () => {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', currentTheme);
+  localStorage.setItem('kb-theme', currentTheme);
+  updateIcons();
+};
+
+// Layout Toggle
+document.getElementById('layout-toggle').onclick = () => {
+  currentLayout = currentLayout === 'grid' ? 'list' : 'grid';
+  document.body.classList.toggle('list-view');
+  localStorage.setItem('kb-layout', currentLayout);
+  updateIcons();
+};
+
+// Sort KNOWLEDGE by date descending (Newest first)
+KNOWLEDGE.sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // Group by category
 function groupByCategory(items) {
+  // We keep the sorted order even after grouping
   return items.reduce((acc, item) => {
     if (!acc[item.category]) acc[item.category] = { emoji: item.emoji, color: item.color, items: [] };
     acc[item.category].items.push(item);
     return acc;
   }, {});
 }
+
 
 // Badge HTML
 function badgeHTML(badge) {
