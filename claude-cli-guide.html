@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code CLI - คู่มือการติดตั้งและใช้งาน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Anuphan', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        code { background: #1e293b; color: #d97757; padding: 0.2rem 0.4rem; rounded: 4px; font-family: monospace; }
+        pre { background: #020617; padding: 1rem; border-radius: 8px; overflow-x: auto; border: 1px solid #1e293b; }
+        pre code { background: transparent; color: #e2e8f0; padding: 0; }
+        .prose h2 { color: #d97757; margin-top: 2rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 600; border-left: 4px solid #d97757; padding-left: 1rem; }
+        .prose h3 { color: #fb923c; margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.25rem; font-weight: 600; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="mb-12">
+            <a href="index.html" class="text-orange-400 hover:text-orange-300 mb-4 inline-block"><i class="fas fa-arrow-left mr-2"></i> กลับหน้าหลัก</a>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">Claude Code CLI</h1>
+            <p class="text-slate-400 text-lg">คู่มือการติดตั้งและการใช้งานผู้ช่วยเขียนโค้ดอัจฉริยะบน Terminal จาก Anthropic</p>
+        </header>
+
+        <!-- Content -->
+        <div class="glass p-6 md:p-10 rounded-3xl prose prose-invert max-w-none">
+            
+            <h2>1. Claude Code CLI คืออะไร?</h2>
+            <p>Claude Code คือ Agentic Command-Line Interface (CLI) จาก Anthropic ที่ออกแบบมาเพื่อช่วยนักพัฒนาในการค้นหาข้อมูล แก้ไขโค้ด ทดสอบระบบ และจัดการ Codebase ได้โดยตรงจาก Terminal ของคุณ</p>
+            
+            <h3>ฟีเจอร์หลัก (Key Features)</h3>
+            <ul class="list-disc ml-6 space-y-2 text-slate-300">
+                <li><strong>Agentic Editing:</strong> แก้ไขโค้ดหลายไฟล์พร้อมกัน, Refactor และแก้บั๊กได้อัตโนมัติ (รอการอนุมัติจากคุณ)</li>
+                <li><strong>Toolchain Access:</strong> รันคำสั่ง Shell, รัน Unit Test และอ่าน/เขียนไฟล์ในเครื่องได้</li>
+                <li><strong>Subagents:</strong> มอบหมายงานเฉพาะทาง (เช่น งานวิจัยหรือวางแผน) ให้โมเดลย่อยทำงานคู่ขนานได้ เพื่อประหยัด Context หลัก</li>
+                <li><strong>MCP Integration:</strong> รองรับ Model Context Protocol ในการเชื่อมต่อเครื่องมือ ฐานข้อมูล หรือ API ภายนอก</li>
+                <li><strong>Git Integration:</strong> สร้าง Checkpoints อัตโนมัติ, จัดการ Branch และช่วยร่าง Commit message</li>
+            </ul>
+
+            <h2>2. การติดตั้ง (Installation)</h2>
+            <p>ระบบต้องการ <strong>Node.js 18+</strong> และสามารถใช้งานได้ทั้งบน macOS, Linux และ Windows (ผ่าน WSL หรือ PowerShell)</p>
+            
+            <h3>สำหรับ Windows (PowerShell)</h3>
+            <pre><code>irm https://claude.ai/install.ps1 | iex</code></pre>
+            
+            <h3>สำหรับ macOS / Linux / WSL</h3>
+            <pre><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+            
+            <h3>ทางเลือก: ติดตั้งผ่าน npm</h3>
+            <pre><code>npm install -g @anthropic-ai/claude-code</code></pre>
+
+            <h2>3. การเริ่มต้นเปิดใช้งาน (Getting Started)</h2>
+            <ol class="list-decimal ml-6 space-y-3 text-slate-300">
+                <li>
+                    <strong>เข้าสู่โฟลเดอร์โปรเจกต์:</strong>
+                    <pre><code>cd path/to/your-project</code></pre>
+                </li>
+                <li>
+                    <strong>เริ่มการทำงาน:</strong>
+                    <pre><code>claude</code></pre>
+                    <em>*ในการใช้งานครั้งแรก ระบบจะเปิดเบราว์เซอร์เพื่อให้คุณ Login ด้วยบัญชี Anthropic</em>
+                </li>
+            </ol>
+
+            <h2>4. คำสั่งและการสั่งงาน (Commands & Usage)</h2>
+            
+            <h3>คำสั่งระบบ (Slash Commands)</h3>
+            <p>พิมพ์ <code>/</code> เพื่อเรียกใช้งานคำสั่งระบบที่สำคัญ:</p>
+            <ul class="list-disc ml-6 space-y-2 text-slate-300">
+                <li><code>/help</code> : แสดงรายการคำสั่งทั้งหมดที่มี</li>
+                <li><code>/compact</code> : <strong>(สำคัญ)</strong> รวบตึงประวัติการสนทนาเพื่อลดการใช้ Token และประหยัดค่าใช้จ่าย</li>
+                <li><code>/clear</code> : ล้างหน้าจอ Terminal</li>
+                <li><code>/buddy</code> : เรียกสัตว์เลี้ยง ASCII มาอยู่เป็นเพื่อน (Easter egg)</li>
+                <li><code>/logout</code> : ออกจากระบบและลบ Credential</li>
+                <li><code>exit</code> (หรือกด Ctrl+C) : ออกจากโปรแกรม</li>
+            </ul>
+
+            <h3>การสั่งงานด้วยภาษาธรรมชาติ</h3>
+            <p>คุณสามารถสั่งงานเป็นประโยคได้เลย เช่น:</p>
+            <ul class="list-disc ml-6 space-y-2 text-slate-300">
+                <li><code>Explain what this file does</code></li>
+                <li><code>Find and fix the bug in [function name]</code></li>
+                <li><code>Write unit tests for the utility module</code></li>
+                <li><code>Run the build and tell me if it fails</code></li>
+            </ul>
+
+            <h2>5. ความปลอดภัยและการตั้งค่า (Security & Config)</h2>
+            <ul class="list-disc ml-6 space-y-2 text-slate-300">
+                <li><strong>ระบบ Permission:</strong> ทุกครั้งที่ Claude จะแก้ไขไฟล์หรือรันคำสั่ง Shell ระบบจะหยุดและถามคุณก่อน <code>[y/n]</code> เสมอ</li>
+                <li><strong>Undo & Checkpoints:</strong> มีระบบ Checkpoint ผ่าน Git อัตโนมัติ หากโค้ดพังสามารถสั่ง "Undo" กลับไปสถานะเดิมได้ทันที</li>
+                <li><strong>CLAUDE.md:</strong> แนะนำให้สร้างไฟล์ <code>CLAUDE.md</code> ไว้ที่ Root ของโปรเจกต์ เพื่อใส่กฎเกณฑ์ (Coding Standards) และบริบทเฉพาะของโปรเจกต์ให้ AI ทำงานได้ตรงใจที่สุด</li>
+            </ul>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-slate-500 pb-10">
+            <p>© 2026 My Knowledge Base · Built with AI</p>
+        </footer>
+    </div>
+</body>
+</html>

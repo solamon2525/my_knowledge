@@ -197,4 +197,16 @@ const KNOWLEDGE = [
     link: "build-with-claude.html",
     date: "2026-04-24"
   },
+  {
+    id: "ai-004",
+    category: "AI & Prompt Engineering",
+    emoji: "⌨️",
+    color: "#00d4ff",
+    title: "Claude Code CLI - คู่มือเริ่มต้น",
+    desc: "วิธีการติดตั้งและการใช้งาน Claude Code CLI ผู้ช่วยเขียนโค้ดอัจฉริยะบน Terminal พร้อมคำสั่งที่สำคัญและการตั้งค่าระบบ",
+    tags: ["Claude Code", "CLI", "Anthropic", "Terminal"],
+    badge: "new",
+    link: "claude-cli-guide.html",
+    date: "2026-04-24"
+  },
 ];
