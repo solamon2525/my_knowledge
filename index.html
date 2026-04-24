@@ -100,7 +100,7 @@
   <main class="container">
     <!-- HERO -->
     <section class="hero fade-in">
-      <div class="hero-badge">✨ Knowledge Base v1.2</div>
+      <div class="hero-badge">✨ Knowledge Base v1.3</div>
       <h1>My Knowledge Base</h1>
       <p class="hero-sub">คลังความรู้ส่วนตัว รวบรวมสรุปความรู้จากแหล่งต่างๆ จัดหมวดหมู่เพื่อการค้นหาและทบทวนได้ง่าย</p>
       <div class="hero-tags" id="category-filters">
@@ -134,112 +134,37 @@
 <script src="data/knowledge_db.js"></script>
 <script>
 /* =====================================================
-   ⚙️ ENGINE — ระบบอัตโนมัติ 
+   ⚙️ ENGINE — ระบบอัตโนมัติขั้นสูง
    ===================================================== */
 
 let currentFilter = 'all';
 let currentSearch = '';
-let currentLayout = localStorage.getItem('kb-layout') || 'grid';
-let currentTheme = localStorage.getItem('kb-theme') || 'dark';
+let currentLayout = 'grid';
+let currentTheme = 'dark';
 
-// จัดเรียงข้อมูลตามวันที่ (ใหม่ไปเก่า)
-KNOWLEDGE.sort((a, b) => new Date(b.date) - new Date(a.date));
+// ป้องกันปัญหา localStorage
+try {
+  currentLayout = localStorage.getItem('kb-layout') || 'grid';
+  currentTheme = localStorage.getItem('kb-theme') || 'dark';
+} catch (e) { console.error("LocalStorage blocked", e); }
 
-// ฟังก์ชันเริ่มต้นแอป
-function initApp() {
-  // ตั้งค่า Theme และ Layout
-  document.body.setAttribute('data-theme', currentTheme);
-  if (currentLayout === 'list') document.body.classList.add('list-view');
-  
-  updateIcons();
-  buildFilters();
-  buildStats();
-  
-  // สั่ง Render ทันที
-  render();
-  updateLastUpdated();
-  
-  // ตั้งค่า Event Listeners สำหรับปุ่มที่ไม่ได้ใส่ใน HTML โดยตรง
-  document.getElementById('btn-filter-all').onclick = function() { filterCategory('all', this); };
+// จัดเรียงข้อมูลทันที
+if (typeof KNOWLEDGE !== 'undefined') {
+  KNOWLEDGE.sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
 function updateIcons() {
-  const themeIcon = document.getElementById('theme-icon');
-  const layoutIcon = document.getElementById('layout-icon');
-  if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
-  if (layoutIcon) layoutIcon.textContent = currentLayout === 'grid' ? '⊞' : '〓';
+  try {
+    const themeIcon = document.getElementById('theme-icon');
+    const layoutIcon = document.getElementById('layout-icon');
+    if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+    if (layoutIcon) layoutIcon.textContent = currentLayout === 'grid' ? '⊞' : '〓';
+  } catch (e) {}
 }
 
-// Theme Toggle
-document.getElementById('theme-toggle').onclick = () => {
-  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.body.setAttribute('data-theme', currentTheme);
-  localStorage.setItem('kb-theme', currentTheme);
-  updateIcons();
-};
-
-// Layout Toggle
-document.getElementById('layout-toggle').onclick = () => {
-  currentLayout = currentLayout === 'grid' ? 'list' : 'grid';
-  document.body.classList.toggle('list-view');
-  localStorage.setItem('kb-layout', currentLayout);
-  updateIcons();
-};
-
-// Group by category
-function groupByCategory(items) {
-  return items.reduce((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = { emoji: item.emoji, color: item.color, items: [] };
-    acc[item.category].items.push(item);
-    return acc;
-  }, {});
-}
-
-// Badge HTML
-function badgeHTML(badge) {
-  if (!badge) return '';
-  const map = { new: ['badge-new','NEW'], hot: ['badge-hot','🔥 HOT'], update: ['badge-update','UPDATE'], star: ['badge-star','⭐ STAR'] };
-  const [cls, label] = map[badge] || ['',''];
-  return `<span class="badge ${cls}">${label}</span>`;
-}
-
-// Highlight search
-function highlight(text, query) {
-  if (!query) return text;
-  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  return text.replace(regex, '<mark class="highlight">$1</mark>');
-}
-
-// Format date
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
-// Card HTML
-function cardHTML(item) {
-  const q = currentSearch;
-  return `
-    <a class="card" href="${item.link}" ${item.link !== '#' ? 'target="_blank"' : 'onclick="return false"'} id="card-${item.id}">
-      <div class="card-header">
-        <div class="card-emoji">${item.emoji}</div>
-        <div class="card-badges">${badgeHTML(item.badge)}</div>
-      </div>
-      <div class="card-title">${highlight(item.title, q)}</div>
-      <div class="card-desc">${highlight(item.desc, q)}</div>
-      <div class="card-footer">
-        <div class="card-tags">
-          ${item.tags.map(t => `<span class="card-tag">${highlight(t, q)}</span>`).join('')}
-        </div>
-        <div class="card-date">${formatDate(item.date)}</div>
-      </div>
-    </a>
-  `;
-}
-
-// Render Core
 function render() {
+  if (typeof KNOWLEDGE === 'undefined') return;
+  
   const q = currentSearch.toLowerCase().trim();
   let filtered = KNOWLEDGE.filter(item => {
     const matchCat = currentFilter === 'all' || item.category === currentFilter;
@@ -254,6 +179,8 @@ function render() {
   const grouped = groupByCategory(filtered);
   const sections = document.getElementById('knowledge-sections');
   const noResults = document.getElementById('no-results');
+
+  if (!sections) return;
 
   if (filtered.length === 0) {
     sections.innerHTML = '';
@@ -278,38 +205,83 @@ function render() {
   `).join('');
 }
 
-// Build category filters
+function groupByCategory(items) {
+  return items.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = { emoji: item.emoji, color: item.color, items: [] };
+    acc[item.category].items.push(item);
+    return acc;
+  }, {});
+}
+
+function badgeHTML(badge) {
+  if (!badge) return '';
+  const map = { new: ['badge-new','NEW'], hot: ['badge-hot','🔥 HOT'], update: ['badge-update','UPDATE'], star: ['badge-star','⭐ STAR'] };
+  const [cls, label] = map[badge] || ['',''];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function cardHTML(item) {
+  const q = currentSearch;
+  return `
+    <a class="card" href="${item.link}" ${item.link !== '#' ? 'target="_blank"' : 'onclick="return false"'} id="card-${item.id}">
+      <div class="card-header">
+        <div class="card-emoji">${item.emoji}</div>
+        <div class="card-badges">${badgeHTML(item.badge)}</div>
+      </div>
+      <div class="card-title">${highlight(item.title, q)}</div>
+      <div class="card-desc">${highlight(item.desc, q)}</div>
+      <div class="card-footer">
+        <div class="card-tags">
+          ${item.tags.map(t => `<span class="card-tag">${highlight(t, q)}</span>`).join('')}
+        </div>
+        <div class="card-date">${formatDate(item.date)}</div>
+      </div>
+    </a>
+  `;
+}
+
+function highlight(text, query) {
+  if (!query) return text;
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(regex, '<mark class="highlight">$1</mark>');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
 function buildFilters() {
-  const cats = [...new Set(KNOWLEDGE.map(k => k.category))];
   const container = document.getElementById('category-filters');
-  if (!container) return;
+  if (!container || typeof KNOWLEDGE === 'undefined') return;
   
+  const cats = [...new Set(KNOWLEDGE.map(k => k.category))];
   const catObj = groupByCategory(KNOWLEDGE);
-  
-  // เก็บปุ่ม All ไว้
   const allBtn = document.getElementById('btn-filter-all');
+  
   container.innerHTML = '';
   if (allBtn) container.appendChild(allBtn);
 
   cats.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = 'hero-tag';
-    btn.dataset.filter = cat;
     btn.innerHTML = `${catObj[cat].emoji} ${cat}`;
     btn.onclick = function() { filterCategory(cat, this); };
     container.appendChild(btn);
   });
 
-  document.getElementById('total-count').textContent = KNOWLEDGE.length;
-  document.getElementById('cat-count').textContent = cats.length;
+  try {
+    document.getElementById('total-count').textContent = KNOWLEDGE.length;
+    document.getElementById('cat-count').textContent = cats.length;
+  } catch (e) {}
 }
 
-// Build stats bar
 function buildStats() {
+  const bar = document.getElementById('stats-bar');
+  if (!bar || typeof KNOWLEDGE === 'undefined') return;
   const cats = groupByCategory(KNOWLEDGE);
   const totalNew = KNOWLEDGE.filter(k => k.badge === 'new').length;
-  const bar = document.getElementById('stats-bar');
-  if (!bar) return;
   bar.innerHTML = `
     <div class="stat-card">
       <div class="stat-icon">📖</div>
@@ -342,7 +314,6 @@ function buildStats() {
   `;
 }
 
-// Filter Action
 function filterCategory(cat, el) {
   currentFilter = cat;
   document.querySelectorAll('.hero-tag').forEach(b => b.classList.remove('active'));
@@ -350,26 +321,50 @@ function filterCategory(cat, el) {
   render();
 }
 
-// Search Action
-document.getElementById('search-input').addEventListener('input', function() {
+function updateLastUpdated() {
+  const lastUpdatedEl = document.getElementById('last-updated');
+  if (!lastUpdatedEl || typeof KNOWLEDGE === 'undefined') return;
+  const dates = KNOWLEDGE.map(k => k.date).filter(Boolean).sort().reverse();
+  lastUpdatedEl.textContent = dates[0] ? formatDate(dates[0]) : '-';
+}
+
+function init() {
+  try {
+    document.body.setAttribute('data-theme', currentTheme);
+    if (currentLayout === 'list') document.body.classList.add('list-view');
+    updateIcons();
+    buildFilters();
+    buildStats();
+    render();
+    updateLastUpdated();
+  } catch (e) { console.error("Init error", e); }
+}
+
+// ผูกเหตุการณ์ปุ่ม
+document.getElementById('theme-toggle').onclick = () => {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', currentTheme);
+  try { localStorage.setItem('kb-theme', currentTheme); } catch(e){}
+  updateIcons();
+};
+
+document.getElementById('layout-toggle').onclick = () => {
+  currentLayout = currentLayout === 'grid' ? 'list' : 'grid';
+  document.body.classList.toggle('list-view');
+  try { localStorage.setItem('kb-layout', currentLayout); } catch(e){}
+  updateIcons();
+};
+
+document.getElementById('btn-filter-all').onclick = function() { filterCategory('all', this); };
+document.getElementById('search-input').oninput = function() {
   currentSearch = this.value;
   render();
-});
+};
 
-// Update last updated date
-function updateLastUpdated() {
-  const dates = KNOWLEDGE.map(k => k.date).filter(Boolean).sort().reverse();
-  const lastUpdatedEl = document.getElementById('last-updated');
-  if (lastUpdatedEl) lastUpdatedEl.textContent = dates[0] ? formatDate(dates[0]) : '-';
-}
-
-// ** สั่งรันทันทีเมื่อโหลดไฟล์เสร็จ **
-document.addEventListener('DOMContentLoaded', initApp);
-// ป้องกันกรณี DOMContentLoaded รันไปแล้ว
-if (document.readyState === 'interactive' || document.readyState === 'complete') {
-  initApp();
-}
-
+// ** บังคับรันหลายระดับเพื่อความมั่นใจ **
+window.onload = init;
+document.addEventListener('DOMContentLoaded', init);
+setTimeout(init, 100); // ประกันสุดท้ายถ้าทุกอย่างช้า
 </script>
 </body>
 </html>
