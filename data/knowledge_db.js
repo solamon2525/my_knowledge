@@ -209,4 +209,16 @@ const KNOWLEDGE = [
     link: "claude-cli-guide.html",
     date: "2026-04-24"
   },
+  {
+    id: "ai-005",
+    category: "AI & Prompt Engineering",
+    emoji: "💖",
+    color: "#00d4ff",
+    title: "Lovable.dev - Vibe Coding แห่งอนาคต",
+    desc: "รู้จักกับ AI Full-stack Engineer ที่ช่วยสร้างแอป React + Supabase ได้ทั้งตัวเพียงแค่การคุย พร้อมระบบ Live Preview และ GitHub Sync",
+    tags: ["Lovable", "AI", "Vibe Coding", "React", "Supabase"],
+    badge: "star",
+    link: "lovable-guide.html",
+    date: "2026-04-24"
+  },
 ];
