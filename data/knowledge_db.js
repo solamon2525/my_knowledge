@@ -133,6 +133,18 @@ const KNOWLEDGE = [
     link: "rtk.html",
     date: "2026-04-16"
   },
+  {
+    id: "tools-005",
+    category: "Tools & DevOps",
+    emoji: "♊",
+    color: "#f59e0b",
+    title: "Gemini CLI - พลัง AI ใน Terminal",
+    desc: "ผู้ช่วยวิศวกรซอฟต์แวร์อัจฉริยะที่ทำงานผ่าน Command Line รองรับการวิเคราะห์โค้ด, รันคำสั่ง Shell, จัดการไฟล์ และเชื่อมต่อกับ Google Search ได้ในตัว",
+    tags: ["Gemini", "AI", "CLI", "Google Cloud", "Automation"],
+    badge: "new",
+    link: "#",
+    date: "2026-04-24"
+  },
 
   /* ─── 📱 Mobile ─── */
   {
